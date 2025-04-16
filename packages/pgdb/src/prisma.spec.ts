@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import prisma from './prisma';
+import { prisma } from './prisma';
 
 describe('Prisma', () => {
   it('should be defined', () => {
