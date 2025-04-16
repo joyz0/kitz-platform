@@ -1,13 +1,12 @@
 {
-  "name": "@repo/database",
+  "name": "@repo/pgdb",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
-  "main": "index.js",
+  "main": "./src/prisma.ts",
   "exports": {
-    "./prisma": "./src/prisma.ts"
+    ".": "./src/prisma.ts"
   },
-  "scripts": {
+  "scripts":{
     "test": "jest",
     "prisma-migrate": "prisma migrate dev --name init",
     "prisma-seed": "prisma db seed",
@@ -20,6 +19,7 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@repo/jest-config": "workspace:^",
+    "@repo/typescript-config": "workspace:^",
     "jest": "^29.7.0",
     "prisma": "^6.6.0"
   }
