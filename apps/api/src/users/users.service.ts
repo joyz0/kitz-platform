@@ -68,10 +68,11 @@ export class UsersService extends BaseService {
 
   async remove(id: string): Promise<void> {
     try {
-      await prisma.user.delete({
+      const user = await prisma.user.delete({
         where: { id },
       });
       this.logger.log(`User deleted with ID: ${id}`);
+      return user;
     } catch (error) {
       this.handleError(error, `Error deleting user with ID: ${id}`);
     }

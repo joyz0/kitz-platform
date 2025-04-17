@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient, UserRole, InviteCodeType } from '@prisma/client';
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { withAccelerate } from '@prisma/extension-accelerate';
 
@@ -15,6 +15,6 @@ declare const globalThis: {
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 export { prisma, PrismaClient, PrismaClientKnownRequestError, UserRole };
-export type { User, Account, Session, VerificationToken, Authenticator, InviteCode } from '@prisma/client';
+export type { User, Account, Session, VerificationToken, Authenticator, InviteCode, InviteCodeType } from '@prisma/client';
 
 if (process.env.NODE_ENV === 'development') globalThis.prismaGlobal = prisma;

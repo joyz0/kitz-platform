@@ -1,1 +1,1 @@
-export class CreateLinkDto {}
+giexport class CreateLinkDto {}
