@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@repo/pgdb';
-import { User } from '@repo/api/users/entities/user.entity';
+import { UserEntity } from '@repo/api/users/entities/user.entity';
 import { BaseService } from '../common/base.service';
 import { CreateUserDto } from '@repo/api/users/dto/create-user.dto';
 import { UpdateUserDto } from '@repo/api/users/dto/update-user.dto';
@@ -12,7 +12,7 @@ export class UsersService extends BaseService {
     super(UsersService.name);
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     try {
       const user = await prisma.user.create({
         data: {
@@ -28,7 +28,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserEntity[]> {
     try {
       const users = await prisma.user.findMany();
       this.logger.log(`Retrieved ${users.length} users`);
@@ -38,7 +38,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findOne(id: string): Promise<User | null> {
+  async findOne(id: string): Promise<UserEntity | null> {
     try {
       const user = await prisma.user.findUnique({
         where: { id },
@@ -53,7 +53,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     try {
       const user = await prisma.user.update({
         where: { id },

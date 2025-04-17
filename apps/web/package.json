@@ -12,11 +12,19 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@ant-design/icons": "5.x",
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@repo/pgdb": "workspace:^",
     "@repo/ui": "workspace:*",
+    "add": "^2.0.6",
+    "antd": "^5.24.7",
+    "bcryptjs": "^3.0.2",
     "next": "15.3.0",
+    "next-auth": "5.0.0-beta.25",
+    "pnpm": "^10.8.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

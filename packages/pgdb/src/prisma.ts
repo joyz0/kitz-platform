@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { withAccelerate } from '@prisma/extension-accelerate';
 
 // Learn more about instantiating PrismaClient in Next.js here: https://www.prisma.io/docs/data-platform/accelerate/getting-started
@@ -13,6 +14,7 @@ declare const globalThis: {
 
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
-export { prisma, Prisma };
+export { prisma, PrismaClient, PrismaClientKnownRequestError, UserRole };
+export type { User, Account, Session, VerificationToken, Authenticator, InviteCode } from '@prisma/client';
 
 if (process.env.NODE_ENV === 'development') globalThis.prismaGlobal = prisma;

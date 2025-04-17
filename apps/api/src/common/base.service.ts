@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@repo/pgdb';
+import { PrismaClientKnownRequestError } from '@repo/pgdb';
 
 @Injectable()
 export abstract class BaseService {
@@ -11,7 +11,7 @@ export abstract class BaseService {
 
   protected handleError(error: unknown, context?: string): never {
     // 处理 Prisma 已知错误
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       this.logError(`[Prisma Error ${error.code}]`, context, error);
       
       // 特殊处理常见错误码
