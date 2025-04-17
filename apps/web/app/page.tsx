@@ -64,7 +64,8 @@ const LinksSectionForTest = () => {
   );
 };
 
-const RootPage = ({ params }: { params: { forTest?: boolean } }) => {
+const RootPage = async (props: { params: Promise<{ forTest?: boolean }> }) => {
+  const params = await props.params;
   return (
     <main className={styles.main}>
       <div className={styles.description}>
