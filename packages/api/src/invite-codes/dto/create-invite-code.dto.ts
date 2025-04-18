@@ -1,7 +1,7 @@
 import { type InviteCode, InviteCodeType } from '@repo/pgdb';
 
 export class CreateInviteCodeDto implements Partial<InviteCode>  {
-  code: string;
+  code?: string;
   type: InviteCodeType;
   expiresAt: Date;
   usedAt?: Date;

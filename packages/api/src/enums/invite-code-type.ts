@@ -1,6 +1,6 @@
 import { type EnumClass, createEnum } from './enum-factory';
 
-export const InviteCodeTypeEnum = createEnum({
+export const  = createEnum({
   values: ['REGISTER'] as const,
   labels: {
     REGISTER: '注册码'

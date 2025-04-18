@@ -66,7 +66,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<UserEntity> {
     try {
       const user = await prisma.user.delete({
         where: { id },

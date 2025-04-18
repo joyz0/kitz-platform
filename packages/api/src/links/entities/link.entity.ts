@@ -1,4 +1,4 @@
-export class Link {
+export class LinkEntity {
   id: number;
   url: string;
   title: string;

@@ -15,6 +15,7 @@ describe('InviteCodesService', () => {
   });
 
   it('should be defined', () => {
+    console.log(111, InviteCodeTypeEnum)
     expect(service).toBeDefined();
   });
 

@@ -67,7 +67,7 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-  async remove(code: string): Promise<void> {
+  async remove(code: string): Promise<InviteCodeEntity> {
     try {
       const inviteCode = await prisma.inviteCode.delete({
         where: { code },
