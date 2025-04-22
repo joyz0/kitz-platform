@@ -12,7 +12,10 @@ import { LinksService } from './links.service';
 import { CreateLinkDto } from '@repo/api/links/dto/create-link.dto';
 import { UpdateLinkDto } from '@repo/api/links/dto/update-link.dto';
 
-@Controller('links')
+@Controller({
+  path:'links',
+  version:'1'
+})
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 

@@ -13,7 +13,10 @@ import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-co
 import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('inviteCodes')
+@Controller({
+  path:'inviteCodes',
+  version:'1'
+})
 @UseGuards(AuthGuard('jwt'))
 export class InviteCodesController {
   constructor(private readonly inviteCodesService: InviteCodesService) {}

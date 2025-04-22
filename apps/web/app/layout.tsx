@@ -1,4 +1,5 @@
 import { PropsWithChildren } from 'react';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AntdRegistry>{children}</AntdRegistry>
+      </body>
     </html>
   );
 }
