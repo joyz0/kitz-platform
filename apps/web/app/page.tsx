@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Image from 'next/image';
 
-import { Link } from '@repo/api/links/entities/link.entity';
+import { LinkEntity } from '@repo/api/links/entities/link.entity';
 
 import { Card } from '@repo/ui/card';
 import { Code } from '@repo/ui/code';
@@ -33,7 +33,7 @@ const Gradient = ({
 };
 
 const LinksSection = async () => {
-  const fetchLinks = async (): Promise<Link[]> => {
+  const fetchLinks = async (): Promise<LinkEntity[]> => {
     try {
       return await (await fetch('http://localhost:3000/links')).json();
     } catch (_) {
@@ -46,7 +46,7 @@ const LinksSection = async () => {
   return (
     <div className={styles.grid}>
       {links.map(({ title, url, description }) => (
-        <Card className={styles.card} href={url} key={title} title={title}>
+        <Card className={styles.card} key={title} title={title}>
           {description}
         </Card>
       ))}
@@ -57,7 +57,7 @@ const LinksSection = async () => {
 const LinksSectionForTest = () => {
   return (
     <div className={styles.grid}>
-      <Card className={styles.card} href={'url'} title={'title'}>
+      <Card className={styles.card} title={'title'}>
         description
       </Card>
     </div>
@@ -91,7 +91,7 @@ const RootPage = async (props: { params: Promise<{ forTest?: boolean }> }) => {
         </div>
       </div>
 
-      <Button appName="web (with-nestjs)" className={styles.button}>
+      <Button className={styles.button}>
         Click me!
       </Button>
 

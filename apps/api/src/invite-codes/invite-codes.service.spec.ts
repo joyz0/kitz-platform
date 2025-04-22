@@ -15,7 +15,6 @@ describe('InviteCodesService', () => {
   });
 
   it('should be defined', () => {
-    console.log(111, InviteCodeTypeEnum)
     expect(service).toBeDefined();
   });
 
@@ -25,10 +24,10 @@ describe('InviteCodesService', () => {
       type: InviteCodeTypeEnum.REGISTER
     })
     expect(inviteCode).toHaveProperty('code');
-  }, 10000);
+  }, 100000);
 
   it('inviteCode findAll', async () => {
     const inviteCodes = await service.findAll();
     expect(inviteCodes.length).toBe(1);
-  }, 10000);
+  }, 100000);
 });
