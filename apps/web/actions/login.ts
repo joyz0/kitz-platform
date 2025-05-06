@@ -142,7 +142,7 @@ export async function signUp(prevState: KitResponse, req: FormData) {
     };
   }
   try {
-    req.append('redirectTo', RoutePath.INDEX);
+    req.append('redirectTo', RoutePath.DASHBOARD);
     await signIn('credentials', req);
   } catch (error) {
     if (error instanceof AuthError) {

@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+.starship-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 25px;
+  line-height: 40px;
+  color: #fff;
+
+  section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    min-width: 100%;
+  }
+
+  .s1 {
+    background: #000;
+    max-height: 842px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .s1 svg {
+    overflow: visible;
+    max-width: 1200px;
+  }
+
+  .s0,
+  .s2 {
+    min-height: 100vh;
+    background: #222;
+  }
+}

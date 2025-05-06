@@ -1,0 +1,134 @@
+.step2step-animation-container .window {
+  position: relative;
+  height: 70vh;
+  width: 40vw;
+  border-top: 2rem solid #474b4c;
+  border-radius: 0.5rem;
+  background-color: #252525;
+  overflow: hidden;
+}
+
+.step2step-animation-container {
+  --color-surface50: #7c7c6f;
+  --color-surface-white: #fffce1;
+  --color-blue: #00bae2;
+  --color-surface75: #bbbaa6;
+}
+
+.step2step-animation-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.step2step-animation-container > .steps,
+.step2step-animation-container > .window {
+  flex-basis: 50%;
+}
+
+.step2step-animation-container button {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--color-surface50);
+  font-size: 30vmin;
+  font-weight: 300;
+  cursor: pointer;
+  transition: color 0.5s ease;
+}
+
+.step2step-animation-container button:hover {
+  color: var(--color-surface-white);
+}
+.step2step-animation-container button:focus {
+  outline: 0;
+}
+
+.step2step-animation-container .steps {
+  padding: 0 2rem;
+  font-size: 1.1em;
+}
+
+.step2step-animation-container .steps p:not(:first-child) {
+  display: none;
+}
+
+.step2step-animation-container .box,
+.step2step-animation-container .boxPosition {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  height: 10vmin !important;
+  width: 10vmin !important;
+  box-sizing: content-box;
+}
+
+.step2step-animation-container .boxPosition {
+  top: 6px;
+  left: 6px;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.step2step-animation-container .box {
+  text-align: center;
+  line-height: 10vmin;
+  font-size: 3.5vmin;
+  font-weight: 400;
+  border-radius: 1vmin;
+}
+
+.step2step-animation-container .initialPosition {
+  border-radius: 5px;
+  border: 2px dashed var(--color-blue);
+}
+
+.step2step-animation-container .finalPosition {
+  border-radius: 10px;
+  border: 2px dashed var(--color-surface-white);
+}
+
+.step2step-animation-container .finalContainer {
+  position: relative;
+  width: 36vmin;
+  height: 36vmin;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border: 1px dashed var(--color-surface50);
+  border-radius: 10px;
+  transform: translate(15vmin, -12vmin) scale(1.5) rotate(-30deg);
+  color: var(--color-surface75);
+  padding: 1vmin;
+  font-size: 2vmin;
+  overflow: visible;
+}
+
+.step2step-animation-container .finalContainer:after {
+  content: 'new container';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  padding-bottom: 0.25rem;
+  font-size: 0.9rem;
+  z-index: -1;
+}
+.step2step-animation-container .logo {
+  position: absolute;
+  width: 60px;
+  bottom: 20px;
+  right: 30px;
+}
+
+.step2step-animation-container code {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  font-size: 1rem;
+}
+
+.step2step-animation-container .gsap-logo {
+  max-width: 100px;
+}

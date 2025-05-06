@@ -20,7 +20,7 @@ describe('InviteCodesService', () => {
 
   it('inviteCode create', async () => {
     const inviteCode = await service.create({
-      expiresAt: new Date('2025-04-17'),
+      expiresAt: new Date('2025-07-20'),
       type: InviteCodeTypeEnum.REGISTER
     })
     expect(inviteCode).toHaveProperty('code');

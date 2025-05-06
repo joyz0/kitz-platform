@@ -9,6 +9,6 @@ async function bootstrap() {
     type: VersioningType.URI,
     prefix: 'v', // 可选，版本前缀如 /v1/users
   });
-  await app.listen(3000);
+  await app.listen(8080);
 }
 bootstrap();

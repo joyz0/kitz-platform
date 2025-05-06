@@ -43,7 +43,7 @@ function Login() {
               <input
                 type="hidden"
                 name="redirectTo"
-                value={searchParams.get("callbackUrl") ?? RoutePath.INDEX}
+                value={searchParams.get("callbackUrl") ?? RoutePath.DASHBOARD}
               />
               <div className="grid gap-2">
                 <Label htmlFor="email">邮箱</Label>
@@ -89,7 +89,7 @@ function Login() {
               <input
                 type="hidden"
                 name="redirectTo"
-                value={searchParams.get("callbackUrl") ?? RoutePath.INDEX}
+                value={searchParams.get("callbackUrl") ?? RoutePath.DASHBOARD}
               />
               <Button
                 disabled={isPending || isProviderPending}
