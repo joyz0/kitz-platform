@@ -114,3 +114,4 @@ npx turbo link
 2. 考虑是否能把.env环境变量文件提升到根项目：需要引入dotenv，可能和nextjs默认配置冲突，想想还是算了
 3. 解决pnpm test报错问题：先执行build后在test就不报错了
 4. 跑通api controller测试用例，支持分页查询
+5. 将通用查询方法都提取到base-service和base-controller中

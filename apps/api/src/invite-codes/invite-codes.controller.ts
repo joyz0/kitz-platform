@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
   UseGuards
 } from '@nestjs/common';
 import { InviteCodesService } from './invite-codes.service';
 import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
 import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
+import { PaginateInviteCodeDto } from '@repo/api/invite-codes/dto/paginate-invite-code.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller({
@@ -24,6 +26,11 @@ export class InviteCodesController {
   @Post()
   create(@Body() createInviteCodeDto: CreateInviteCodeDto) {
     return this.inviteCodesService.create(createInviteCodeDto);
+  }
+
+  @Get('paginate')
+  paginate(@Query() query: PaginateInviteCodeDto) {
+    return this.inviteCodesService.paginate(query, query.where);
   }
 
   @Get()

@@ -5,6 +5,8 @@ import { BaseService } from '../common/base.service';
 import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
 import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
 import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
+import { PaginateQueryDto } from '@repo/api/common/paginate-query.dto';
+import { PaginatedResultDto } from '@repo/api/common/paginate-result.dto';
 import crypto from 'crypto';
 
 @Injectable()
@@ -27,6 +29,28 @@ export class InviteCodesService extends BaseService {
     } catch (error) {
       this.handleError(error, 'Error creating inviteCode');
     }
+  }
+
+
+  async paginate(
+    query: PaginateQueryDto,
+    where?: any,
+  ): Promise<PaginatedResultDto<InviteCodeEntity>> {
+    const orderBy = {
+      [query.sortBy]: query.sortOrder.toLowerCase(),
+    };
+  
+    const [data, total] = await Promise.all([
+      prisma.inviteCode.findMany({
+        where,
+        skip: (query.pageNo - 1) * query.pageSize,
+        take: query.pageSize,
+        orderBy,
+      }),
+      prisma.inviteCode.count({ where }),
+    ]);
+
+    return PaginatedResultDto.from(data, total, query);
   }
 
   async findAll(): Promise<InviteCodeEntity[]> {
