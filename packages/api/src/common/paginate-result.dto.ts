@@ -1,6 +1,6 @@
 import { PaginateQueryDto } from './paginate-query.dto';
 
-export class PaginatedResultDto<T> {
+export class PaginateResultDto<T> {
     constructor(
       public data: T[],
       public total: number,
@@ -9,8 +9,8 @@ export class PaginatedResultDto<T> {
       public totalPages: number,
     ) {}
   
-    static from<T>(data: T[], total: number, query: PaginateQueryDto): PaginatedResultDto<T> {
-      return new PaginatedResultDto(
+    static from<T>(data: T[], total: number, query: PaginateQueryDto): PaginateResultDto<T> {
+      return new PaginateResultDto(
         data,
         total,
         query.pageNo,

@@ -30,7 +30,7 @@ export class InviteCodesController {
 
   @Get('paginate')
   paginate(@Query() query: PaginateInviteCodeDto) {
-    return this.inviteCodesService.paginate(query, query.where);
+    return this.inviteCodesService.paginate(query);
   }
 
   @Get()
