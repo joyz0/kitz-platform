@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import * as request from "@/lib/request";
+import * as request from '@/lib/request';
 import {
   QuerySchema,
   InviteCodeSchema,
   InviteCodeFormSchema,
   inviteCodeFormSchema,
-} from "@/lib/zod";
+} from '@/lib/zod';
 import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
@@ -14,7 +14,7 @@ import { Button, Dropdown, Space, Tag } from 'antd';
 import { useRef } from 'react';
 import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
 
-console.log(111, InviteCodeTypeEnum.getOptions())
+console.log(111, InviteCodeTypeEnum.getOptions());
 export const waitTimePromise = async (time: number = 100) => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -169,9 +169,10 @@ export default () => {
       request={async (params, sort, filter) => {
         console.log(sort, filter);
         await waitTime(2000);
-        return request.get<any>(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/inviteCodes}`, {
+        return request.get<any>(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/inviteCodes}`,
           params,
-        });
+        );
       }}
       editable={{
         type: 'multiple',

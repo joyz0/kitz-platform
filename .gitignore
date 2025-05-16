@@ -33,6 +33,7 @@ playwright-report/
 out/
 build
 dist
+generated
 
 # IDEs and editors
 /.idea
