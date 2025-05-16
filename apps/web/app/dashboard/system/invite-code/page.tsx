@@ -170,7 +170,7 @@ export default () => {
         console.log(sort, filter);
         await waitTime(2000);
         return request.get<any>(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/inviteCodes}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/inviteCodes`,
           params,
         );
       }}
