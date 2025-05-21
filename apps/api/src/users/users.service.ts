@@ -53,6 +53,21 @@ export class UsersService extends BaseService {
     }
   }
 
+  async findOneByEmail(email: string): Promise<UserEntity | null> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        this.logger.warn(`User not found with Email: ${email}`);
+        return null;
+      }
+      return user;
+    } catch (error) {
+      this.handleError(error, `Error finding user with Email: ${email}`);
+    }
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     try {
       const user = await prisma.user.update({

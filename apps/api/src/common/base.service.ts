@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@repo/pgdb';
+import { StatusCode } from '@repo/api/enums/status-code';
+import { CustomException } from '../exceptions/custom.exception';
 
 @Injectable()
 export abstract class BaseService {
@@ -13,15 +15,24 @@ export abstract class BaseService {
     // 处理 Prisma 已知错误
     if (error instanceof PrismaClientKnownRequestError) {
       this.logError(`[Prisma Error ${error.code}]`, context, error);
-      
+
       // 特殊处理常见错误码
       switch (error.code) {
         case 'P2002':
-          throw new Error(`Unique constraint failed: ${error.meta?.target}`);
+          throw new CustomException(
+            StatusCode.DB_UNIQUE_CONSTRAINT_FAILED,
+            `Unique constraint failed: ${error.meta?.target}`,
+          );
         case 'P2025':
-          throw new Error('Record not found');
+          throw new CustomException(
+            StatusCode.DB_RECORD_NOT_FOUND,
+            'Record not found',
+          );
         default:
-          throw new Error(`Database error: ${error.message}`);
+          throw new CustomException(
+            StatusCode.DB_ERROR,
+            `Database error: ${error.message}`,
+          );
       }
     }
 
