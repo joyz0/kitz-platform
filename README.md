@@ -115,3 +115,6 @@ npx turbo link
 3. 解决pnpm test报错问题：先执行build后在test就不报错了
 4. 跑通api controller测试用例，支持分页查询
 5. 将通用查询方法都提取到base-service和base-controller中：算了，类型定义太麻烦
+6. 接入supabase和refine
+7. 统一接口返回格式
+8. 登录鉴权放在api好还是web好？：可能放在web更简便，api需要额外协同第三方登录的token鉴权，但放web需要解决与api的token互通和将session token转变为request header token。

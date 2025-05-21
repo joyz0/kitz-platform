@@ -120,9 +120,9 @@ export async function signUp(prevState: KitResponse, req: FormData) {
         message: '邀请码已失效',
       };
     }
-    const [user, code] = await prisma.$transaction(async (tx) => {
+    const [user, code] = await prisma.$transaction(async (tx: any) => {
       const u = await tx.user.create(
-        stripUndefined({ email, password: saltAndHashPassword(password) })
+        stripUndefined({ email, password: saltAndHashPassword(password) }),
       );
       const c = await tx.inviteCode.update({
         where: { code: inviteCode },

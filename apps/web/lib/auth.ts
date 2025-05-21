@@ -1,17 +1,18 @@
-import NextAuth from "next-auth";
-import type { Session, NextAuthResult } from "next-auth";
-import type { Provider } from "next-auth/providers";
-import GitHub from "next-auth/providers/github";
-import Credentials from "next-auth/providers/credentials";
-import { signInSchema } from "./zod";
-import { PrismaAdapter } from "./prisma-adapter";
-import { RoutePath } from "./constants";  
+import NextAuth from 'next-auth';
+import type { Session, NextAuthResult } from 'next-auth';
+import type { Provider } from 'next-auth/providers';
+import GitHub from 'next-auth/providers/github';
+import Credentials from 'next-auth/providers/credentials';
+import { signInSchema } from './zod';
+import { PrismaAdapter } from './prisma-adapter';
+import { RoutePath } from './constants';
 import { prisma } from '@repo/pgdb';
-import bcrypt from "bcryptjs";
-import { headers, cookies } from "next/headers";
-import { getToken, decode } from "next-auth/jwt";
+import bcrypt from 'bcryptjs';
+import { headers, cookies } from 'next/headers';
+import { getToken, encode, decode } from 'next-auth/jwt';
+import * as request from '@/lib/request';
 
-export type NextAuthUser = Session["user"];
+export type NextAuthUser = Session['user'];
 
 const whitelist = [RoutePath.SIGNIN_URL, RoutePath.SIGNUP_URL];
 
@@ -22,31 +23,23 @@ const providers: Provider[] = [
     // You can specify which fields should be submitted, by adding keys to the `credentials` object.
     // e.g. domain, username, password, 2FA token, etc.
     credentials: {
-      email: { label: "邮箱", type: "email", value: "" },
-      password: { label: "密码", type: "password", value: "" },
+      email: { label: '邮箱', type: 'email', value: '' },
+      password: { label: '密码', type: 'password', value: '' },
     },
     authorize: async (credentials) => {
       try {
-        let user: any = null;
-
         const { email, password } = await signInSchema.parseAsync(credentials);
 
-        // logic to verify if the user exists
-        user = await adapter.getUserByEmail!(email);
-
-        if (user) {
-          const isMatch = bcrypt.compareSync(password, user.password);
-          if (!isMatch) {
-            throw new Error("密码不正确");
-          }
-        } else {
-          // No user found, so this is their first attempt to login
-          // meaning this is also the place you could do registration
-          throw new Error("用户不存在");
+        const res = await request.post<any>(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+          {
+            email,
+            password,
+          },
+        );
+        if (res.ok) {
+          return res.data;
         }
-
-        // return user object with their profile data
-        return user;
       } catch (error) {
         return null;
       }
@@ -56,14 +49,14 @@ const providers: Provider[] = [
 ];
 
 export const { handlers, signIn, signOut, auth }: any = NextAuth({
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === 'development',
   trustHost: true,
   providers,
   adapter,
   secret: process.env.AUTH_SECRET,
   session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    strategy: 'jwt',
+    // maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: RoutePath.SIGNIN_URL,
@@ -77,25 +70,38 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       const isProtected = !whitelist.some((path) => pathname.startsWith(path));
       if (!isLoggedIn && isProtected) {
         const redirectUrl = new URL(RoutePath.SIGNIN_URL, origin);
-        redirectUrl.searchParams.append("callbackUrl", href);
+        redirectUrl.searchParams.append('callbackUrl', href);
         return Response.redirect(redirectUrl);
       }
-      console.log("authorized");
+      console.log('authorized');
       return true;
     },
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
 
       // Allows callback URLs on the same origin
       if (new URL(url).origin === baseUrl) return url;
 
       return baseUrl;
     },
-    async signIn({ account, user, credentials }) {
+    async signIn({ account, user, credentials, profile }) {
       // if (account?.provider === 'credentials') {
       //   return (credentials!.email! as string).endsWith('@admin.com');
       // }
+      // const res = await request.post<any>(
+      //   `${process.env.NEXT_PUBLIC_API_URL}/auth/github`,
+      //   {
+      //     githubId: profile!.id,
+      //     email: profile!.email,
+      //     username: profile!.login,
+      //     avatar: user.image,
+      //   },
+      // );
+      // if (!res.ok) {
+      //   throw new Error('认证失败');
+      // }
+      // user.accessToken = res.data.accessToken;
       return true;
     },
     async jwt(data) {
@@ -104,19 +110,19 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       if (user) {
         token.id = user.id!;
         token.role = user.role;
-      }
-      if (account) {
+        token.accessToken = user.accessToken;
+      } else if (account) {
         token.accessToken = account.access_token;
       }
-      console.log("jwt token", token);
-      console.log("jwt user", user);
-      console.log("jwt account", account);
+      console.log('jwt token', token);
+      console.log('jwt user', user);
+      console.log('jwt account', account);
       return token;
     },
     async session(data) {
       const { session, token } = data;
-      console.log("session session", session);
-      console.log("session token", token);
+      console.log('session session', session);
+      console.log('session token', token);
       if (session && token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
@@ -129,20 +135,20 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
 
 export const providerMap = providers
   .map((provider) => {
-    if (typeof provider === "function") {
+    if (typeof provider === 'function') {
       const providerData = provider();
       return { id: providerData.id, name: providerData.name };
     } else {
       return { id: provider.id, name: provider.name };
     }
   })
-  .filter((provider) => provider.id !== "credentials");
+  .filter((provider) => provider.id !== 'credentials');
 
 export const getAuthJwt = async () => {
   const req = {
     headers: Object.fromEntries(await headers()),
     cookies: Object.fromEntries(
-      (await cookies()).getAll().map((c) => [c.name, c.value])
+      (await cookies()).getAll().map((c) => [c.name, c.value]),
     ),
   };
 

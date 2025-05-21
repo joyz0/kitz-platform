@@ -1,7 +1,7 @@
-import NextAuth, { DefaultSession } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import NextAuth, { DefaultSession } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   /**
    * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
    */
@@ -11,18 +11,20 @@ declare module "next-auth" {
       id: string;
       /** The user's role. */
       role?: string | null;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
   interface User {
     id: string;
     role?: string | null;
+    accessToken?: string;
+    refreshToken?: string;
   }
   interface SessionProps {
     session: Session;
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
   interface JWT {
     /** The user's role */
@@ -31,7 +33,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-declare module "next-auth/adapters" {
+declare module 'next-auth/adapters' {
   interface VerificationToken {
     identifier: string;
     expires: Date;
