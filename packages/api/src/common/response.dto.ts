@@ -1,9 +1,19 @@
+export interface PaginateResult<T = any> {
+  items: T[];
+  meta: {
+    total: number;
+    pageNo: number;
+    pageSize: number;
+    totalPages: number;
+  };
+}
+
 export class Response<T> {
   readonly ok: boolean;
   readonly code: number;
   readonly message?: string;
   readonly data?: T;
-  readonly timestamp: number;
+  readonly timestamp?: number;
 
   constructor(
     options: { ok?: boolean; code?: number; message?: string; data?: T } = {},
@@ -28,15 +38,7 @@ export class Response<T> {
     total: number,
     pageNo: number,
     pageSize: number,
-  ): Response<{
-    items: T[];
-    meta: {
-      total: number;
-      pageNo: number;
-      pageSize: number;
-      totalPages: number;
-    };
-  }> {
+  ): Response<PaginateResult<T>> {
     return new Response({
       ok: true,
       data: {

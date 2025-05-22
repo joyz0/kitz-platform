@@ -7,6 +7,12 @@ export enum ErrorType {
   DEFAULT = 'Default',
 }
 
+export const TOKEN_STORAGE_KEY = 'authjs.session-token';
+
+export enum EventType {
+  REQUEST_ERROR = 'request_error',
+}
+
 export enum RoutePath {
   INDEX = '/',
   DASHBOARD = '/dashboard/',

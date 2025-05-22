@@ -7,17 +7,18 @@ import {
   Param,
   Delete,
   Query,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { InviteCodesService } from './invite-codes.service';
 import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
 import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
-import { PaginateInviteCodeDto } from '@repo/api/invite-codes/dto/paginate-invite-code.dto';
+import { PaginateQuery } from '@repo/api/common/request.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { InviteCodeEntity } from '@repo/api/invite-codes/entities/invite-code.entity';
 
 @Controller({
-  path:'inviteCodes',
-  version:'1'
+  path: 'inviteCodes',
+  version: '1',
 })
 @UseGuards(AuthGuard('jwt'))
 export class InviteCodesController {
@@ -29,7 +30,7 @@ export class InviteCodesController {
   }
 
   @Get('paginate')
-  paginate(@Query() query: PaginateInviteCodeDto) {
+  paginate(@Query() query: PaginateQuery<InviteCodeEntity>) {
     return this.inviteCodesService.paginate(query);
   }
 
@@ -44,7 +45,10 @@ export class InviteCodesController {
   }
 
   @Patch(':code')
-  update(@Param('code') code: string, @Body() updateInviteCodeDto: UpdateInviteCodeDto) {
+  update(
+    @Param('code') code: string,
+    @Body() updateInviteCodeDto: UpdateInviteCodeDto,
+  ) {
     return this.inviteCodesService.update(code, updateInviteCodeDto);
   }
 

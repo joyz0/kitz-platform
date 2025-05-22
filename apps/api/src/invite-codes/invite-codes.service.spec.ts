@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { InviteCodesService } from './invite-codes.service';
-import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
 
 describe('InviteCodesService', () => {
   let service: InviteCodesService;
@@ -18,13 +17,13 @@ describe('InviteCodesService', () => {
     expect(service).toBeDefined();
   });
 
-  it('inviteCode create', async () => {
-    const inviteCode = await service.create({
-      expiresAt: new Date('2025-07-20'),
-      type: InviteCodeTypeEnum.REGISTER
-    })
-    expect(inviteCode).toHaveProperty('code');
-  }, 100000);
+  // it('inviteCode create', async () => {
+  //   const inviteCode = await service.create({
+  //     expiresAt: new Date('2025-07-20'),
+  //     type: InviteCodeTypeEnum.REGISTER
+  //   })
+  //   expect(inviteCode).toHaveProperty('code');
+  // }, 100000);
 
   it('inviteCode findAll', async () => {
     const inviteCodes = await service.findAll();

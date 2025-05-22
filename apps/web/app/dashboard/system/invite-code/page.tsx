@@ -14,17 +14,12 @@ import { Button, Dropdown, Space, Tag } from 'antd';
 import { useRef } from 'react';
 import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
 
-console.log(111, InviteCodeTypeEnum.getOptions());
 export const waitTimePromise = async (time: number = 100) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(true);
     }, time);
   });
-};
-
-export const waitTime = async (time: number = 100) => {
-  await waitTimePromise(time);
 };
 
 type GithubIssueItem = {
@@ -168,7 +163,6 @@ export default () => {
       cardBordered
       request={async (params, sort, filter) => {
         console.log(sort, filter);
-        await waitTime(2000);
         return request.get<any>(
           `${process.env.NEXT_PUBLIC_API_URL}/inviteCodes`,
           params,

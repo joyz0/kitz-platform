@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Card,
@@ -6,16 +6,17 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/ui/card";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { RoutePath } from "@/lib/constants";
-import { Input } from "@repo/ui/input";
-import { Button } from "@repo/ui/button";
-import { Label } from "@repo/ui/label";
-import { Suspense, useActionState } from "react";
-import { login, loginByProvider } from "@/actions/login";
+} from '@repo/ui/card';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { RoutePath } from '@/lib/constants';
+import { Input } from '@repo/ui/input';
+import { Button } from '@repo/ui/button';
+import { Label } from '@repo/ui/label';
+import { Suspense, useActionState } from 'react';
+import { login, loginByProvider } from '@/actions/login';
 import { LoadingOutlined } from '@ant-design/icons';
+import { encryptFrontPassword } from '../utils';
 
 function Login() {
   const searchParams = useSearchParams();
@@ -23,7 +24,12 @@ function Login() {
   const [formResult, formAction, isPending] = useActionState<
     KitResponse,
     FormData
-  >(login, {});
+  >(async (prevState: KitResponse, req: FormData) => {
+    const pwd = req.get('password') as string;
+    const encryptedPwd = await encryptFrontPassword(pwd, true);
+    req.set('password', encryptedPwd);
+    return login(prevState, req);
+  }, {});
   const [providerFormResult, providerFormAction, isProviderPending] =
     useActionState<KitResponse, FormData>(loginByProvider, {});
 
@@ -43,7 +49,7 @@ function Login() {
               <input
                 type="hidden"
                 name="redirectTo"
-                value={searchParams.get("callbackUrl") ?? RoutePath.DASHBOARD}
+                value={searchParams.get('callbackUrl') ?? RoutePath.DASHBOARD}
               />
               <div className="grid gap-2">
                 <Label htmlFor="email">邮箱</Label>
@@ -89,7 +95,7 @@ function Login() {
               <input
                 type="hidden"
                 name="redirectTo"
-                value={searchParams.get("callbackUrl") ?? RoutePath.DASHBOARD}
+                value={searchParams.get('callbackUrl') ?? RoutePath.DASHBOARD}
               />
               <Button
                 disabled={isPending || isProviderPending}
@@ -102,7 +108,7 @@ function Login() {
             </form>
           </div>
           <div className="mt-4 text-center text-sm">
-            还没有账号？{" "}
+            还没有账号？{' '}
             <Link href={RoutePath.SIGNUP_URL} className="underline">
               注册
             </Link>

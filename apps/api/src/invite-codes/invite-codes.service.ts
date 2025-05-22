@@ -5,8 +5,8 @@ import { BaseService } from '../common/base.service';
 import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
 import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
 import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
-import { PaginateInviteCodeDto } from '@repo/api/invite-codes/dto/paginate-invite-code.dto';
-import { PaginateResultDto } from '@repo/api/common/paginate-result.dto';
+import { PaginateQuery } from '@repo/api/common/request.dto';
+import { PaginateResult, Response } from '@repo/api/common/response.dto';
 import crypto from 'crypto';
 
 @Injectable()
@@ -15,7 +15,9 @@ export class InviteCodesService extends BaseService {
     super(InviteCodesService.name);
   }
 
-  async create(createInviteCodeDto: CreateInviteCodeDto): Promise<InviteCodeEntity> {
+  async create(
+    createInviteCodeDto: CreateInviteCodeDto,
+  ): Promise<InviteCodeEntity> {
     try {
       const inviteCode = await prisma.inviteCode.create({
         data: {
@@ -31,12 +33,13 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-
-  async paginate(query: PaginateInviteCodeDto): Promise<PaginateResultDto<InviteCodeEntity>> {
+  async paginate(
+    query: PaginateQuery<InviteCodeEntity>,
+  ): Promise<Response<PaginateResult<InviteCodeEntity>>> {
     const orderBy = {
       [query.sortBy]: query.sortOrder.toLowerCase(),
     };
-  
+
     const [data, total] = await Promise.all([
       prisma.inviteCode.findMany({
         where: query.where,
@@ -47,7 +50,12 @@ export class InviteCodesService extends BaseService {
       prisma.inviteCode.count({ where: query.where }),
     ]);
 
-    return PaginateResultDto.from(data, total, query);
+    return Response.paginate<InviteCodeEntity>(
+      data,
+      total,
+      query.pageNo,
+      query.pageSize,
+    );
   }
 
   async findAll(): Promise<InviteCodeEntity[]> {
@@ -75,7 +83,10 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-  async update(code: string, updateInviteCodeDto: UpdateInviteCodeDto): Promise<InviteCodeEntity> {
+  async update(
+    code: string,
+    updateInviteCodeDto: UpdateInviteCodeDto,
+  ): Promise<InviteCodeEntity> {
     try {
       const inviteCode = await prisma.inviteCode.update({
         where: { code },

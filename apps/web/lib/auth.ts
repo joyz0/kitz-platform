@@ -1,15 +1,14 @@
 import NextAuth from 'next-auth';
-import type { Session, NextAuthResult } from 'next-auth';
+import type { Session } from 'next-auth';
 import type { Provider } from 'next-auth/providers';
 import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import { signInSchema } from './zod';
 import { PrismaAdapter } from './prisma-adapter';
-import { RoutePath } from './constants';
+import { ErrorType, RoutePath } from './constants';
 import { prisma } from '@repo/pgdb';
-import bcrypt from 'bcryptjs';
 import { headers, cookies } from 'next/headers';
-import { getToken, encode, decode } from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import * as request from '@/lib/request';
 
 export type NextAuthUser = Session['user'];
@@ -48,6 +47,9 @@ const providers: Provider[] = [
   GitHub,
 ];
 
+// 1小时
+const expiresIn = parseInt(process.env.TOKEN_EXPIRES_IN_HOURS || '1') * 60 * 60;
+
 export const { handlers, signIn, signOut, auth }: any = NextAuth({
   debug: process.env.NODE_ENV === 'development',
   trustHost: true,
@@ -56,7 +58,7 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: 'jwt',
-    // maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: expiresIn,
   },
   pages: {
     signIn: RoutePath.SIGNIN_URL,
@@ -105,29 +107,64 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       return true;
     },
     async jwt(data) {
-      // user是authjs从database user表查询的
+      // https://jwt.io/ 解码jwt
+      // user是Credentials.authorize的返回值
       const { token, user, account } = data;
       if (user) {
         token.id = user.id!;
         token.role = user.role;
         token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
       } else if (account) {
         token.accessToken = account.access_token;
+      }
+      console.log('token.exp', token.exp);
+      if (
+        token.exp &&
+        token.exp > 0 &&
+        Date.now() / 1000 > token.exp - 30 &&
+        token.refreshToken
+      ) {
+        // token续期
+        try {
+          const res = await request.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-token`,
+            {
+              refreshToken: token.refreshToken,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token.accessToken}`,
+              },
+            },
+          );
+          return {
+            ...token,
+            accessToken: res.data.accessToken,
+            refreshToken: res.data.refreshToken,
+            exp: Date.now() + expiresIn,
+          };
+        } catch (error) {
+          return { ...token, error: ErrorType.ACCESS_DENIED };
+        }
       }
       console.log('jwt token', token);
       console.log('jwt user', user);
       console.log('jwt account', account);
       return token;
     },
+    // 该方法返回的键值对会被存到cookies中
     async session(data) {
       const { session, token } = data;
-      console.log('session session', session);
-      console.log('session token', token);
       if (session && token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.accessToken = token.accessToken as string;
+        session.refreshToken = token.refreshToken as string;
+        session.error = token.error as string;
       }
+      console.log('session session', session);
+      console.log('session token', token);
       return session;
     },
   },

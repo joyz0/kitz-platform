@@ -1,7 +1,7 @@
 import { IsOptional, IsNumber, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class PaginateQueryDto {
+export class PaginateQuery<T = any> {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
@@ -19,4 +19,7 @@ export class PaginateQueryDto {
   @IsOptional()
   @IsString()
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
+
+  @IsOptional()
+  where?: Partial<T>;
 }

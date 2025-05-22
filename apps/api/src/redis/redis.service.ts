@@ -9,9 +9,9 @@ export class RedisService extends BaseService {
 
   constructor(@InjectRedis() private readonly redisClient: Redis) {
     super(RedisService.name);
-    redisClient.on('error', (error) => {
+    redisClient.on('error', () => {
       this.isRedisActive = false;
-      this.handleError(error, 'Invalid redis service');
+      this.logger.log('Invalid redis service');
     });
     redisClient.on('ready', () => (this.isRedisActive = true));
   }

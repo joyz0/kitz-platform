@@ -1,8 +1,8 @@
-import { auth } from "@/lib/auth";
+import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import * as React from "react";
-import ClientLayoutWrapper from "./components/client-layout-wrapper";
-import { RoutePath, ErrorType } from "@/lib/constants";
+import * as React from 'react';
+import ClientLayoutWrapper from './components/client-layout-wrapper';
+import { RoutePath, ErrorType } from '@/lib/constants';
 
 export default async function DashboardLayout({
   children,
@@ -13,6 +13,8 @@ export default async function DashboardLayout({
 
   if (!session) {
     redirect(`${RoutePath.ERROR_URL}?error=${ErrorType.ACCESS_DENIED}`);
+  } else if (session.error) {
+    redirect(`${RoutePath.ERROR_URL}?error=${session.error}`);
   }
 
   return (

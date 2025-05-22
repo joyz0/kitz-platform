@@ -15,12 +15,18 @@ import { Label } from '@repo/ui/label';
 import { signUp } from '@/actions/login';
 import { useActionState, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
+import { encryptFrontPassword } from '../utils';
 
 export default function SignUpPage() {
   const [formResult, formAction, isPending] = useActionState<
     KitResponse,
     FormData
-  >(signUp, {});
+  >(async (prevState: KitResponse, req: FormData) => {
+    const pwd = req.get('password') as string;
+    const encryptedPwd = await encryptFrontPassword(pwd, true);
+    req.set('password', encryptedPwd);
+    return signUp(prevState, req);
+  }, {});
   const [formData, setFormData] = useState<any>({});
 
   function handleChange(e: React.FormEvent<HTMLInputElement>, name: string) {

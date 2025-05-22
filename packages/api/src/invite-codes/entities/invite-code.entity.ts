@@ -1,8 +1,9 @@
-import { type InviteCode, InviteCodeType } from '@repo/pgdb';
+import { type InviteCode } from '@repo/pgdb';
+import { InviteCodeTypeEnum } from '../../enums/invite-code-type';
 
 export class InviteCodeEntity implements Partial<InviteCode> {
   code: string;
-  type?: InviteCodeType;
+  type?: InviteCodeTypeEnum;
   expiresAt?: Date;
   usedAt?: Date;
   createdAt?: Date;

@@ -1,4 +1,6 @@
-import { merge } from 'lodash';
+import { EventType, TOKEN_STORAGE_KEY } from './constants';
+import { CustomEventBus } from './event';
+import { storage } from './storage';
 
 type QueryParam = string | number | boolean | null | undefined;
 
@@ -6,17 +8,33 @@ interface QueryParams {
   [key: string]: QueryParam | QueryParam[];
 }
 
+const whiteList = ['/auth/login'];
+
+async function ResponseInterceptor(response: Response) {
+  const json = await response.json();
+  if (!json.ok) {
+    CustomEventBus.emit(EventType.REQUEST_ERROR, json.message);
+    throw new Error(json.message);
+  }
+  return json;
+}
+
 export async function get<
   Q extends QueryParams = QueryParams,
   R = any,
-  O extends RequestInit = RequestInit
->(
-  url: string,
-  queryData?: Q,
-  options?: O
-): Promise<R> {
-  const urlObj = new URL(url, window.location.origin);
+  O extends RequestInit = RequestInit,
+>(url: string, queryData?: Q, options?: O): Promise<R> {
+  const token =
+    typeof window === undefined ? null : storage.get(TOKEN_STORAGE_KEY);
+  const urlObj = new URL(url, undefined);
   const params = queryData || {};
+
+  const defaultHeaders: HeadersInit = {};
+  const isPublic = whiteList.some((path) => url.indexOf(path) > -1);
+  if (!isPublic && token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
+  const headers = new Headers(defaultHeaders);
 
   Object.entries(params).forEach(([key, val]) => {
     if (Array.isArray(val)) {
@@ -33,25 +51,28 @@ export async function get<
   const response = await fetch(urlObj.href, {
     ...options,
     method: 'GET',
+    headers,
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  return response.json();
+  return ResponseInterceptor(response);
 }
 
 type PostBody = Record<string, any> | FormData | BodyInit;
 
-export async function post<B = PostBody, R = any, O extends RequestInit = RequestInit>(
-  url: string,
-  body?: B,
-  options?: O
-): Promise<R> {
+export async function post<
+  B = PostBody,
+  R = any,
+  O extends RequestInit = RequestInit,
+>(url: string, body?: B, options?: O): Promise<R> {
+  const token =
+    typeof window === undefined ? null : storage.get(TOKEN_STORAGE_KEY);
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
   };
+  const isPublic = whiteList.some((path) => url.indexOf(path) > -1);
+  if (!isPublic && token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
 
   // Create a headers object combining defaults and options
   const headers = new Headers(defaultHeaders);
@@ -69,7 +90,11 @@ export async function post<B = PostBody, R = any, O extends RequestInit = Reques
 
   // Stringify body only if it's a plain object and not FormData
   let processedBody: BodyInit | undefined;
-  if (typeof body === 'object' && body !== null && !(body instanceof FormData)) {
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    !(body instanceof FormData)
+  ) {
     processedBody = JSON.stringify(body);
   } else {
     processedBody = body as BodyInit;
@@ -82,9 +107,5 @@ export async function post<B = PostBody, R = any, O extends RequestInit = Reques
     body: processedBody,
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  return response.json();
+  return ResponseInterceptor(response);
 }

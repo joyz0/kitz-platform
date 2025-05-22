@@ -3,6 +3,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 import type { Metadata } from 'next';
 // import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
+import '@ant-design/v5-patch-for-react-19';
 
 import './globals.css';
 
@@ -27,7 +28,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <AntdRegistry>{children}</AntdRegistry>
       </body>
     </html>

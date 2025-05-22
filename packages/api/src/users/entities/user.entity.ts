@@ -1,4 +1,5 @@
-import { type User, UserRole } from '@repo/pgdb';
+import { type User } from '@repo/pgdb';
+import { UserRoleEnum } from '../../enums/user-role';
 
 export class UserEntity implements User {
   id: string;
@@ -7,7 +8,7 @@ export class UserEntity implements User {
   email: string;
   emailVerified: Date;
   image: string;
-  role: UserRole;
+  role: UserRoleEnum;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -5,18 +5,22 @@ import { BaseService } from '../common/base.service';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '@repo/api/users/entities/user.entity';
 import { RedisService } from '../redis/redis.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService extends BaseService {
-  private readonly expiresIn = parseInt(
-    process.env.REFRESH_TOKEN_EXPIRES_IN || '7',
-  );
+  private expiresIn: number;
+
   constructor(
     private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly config: ConfigService,
   ) {
     super(AuthService.name);
+    this.expiresIn = parseInt(
+      this.config.get('REFRESH_TOKEN_EXPIRES_IN_DAYS') || '7',
+    );
   }
 
   async validateUser(email: string, pwd: string): Promise<Partial<UserEntity>> {

@@ -7,20 +7,26 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { LocalRedisModule } from '../redis/redis.module';
-
-const expiresIn = parseInt(process.env.TOKEN_EXPIRES_IN || '1');
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     LocalRedisModule,
     UsersModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.AUTH_SECRET,
-      signOptions: {
-        expiresIn: `${expiresIn}h`,
-        algorithm: 'RS256',
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => {
+        const expiresIn = parseInt(config.get('TOKEN_EXPIRES_IN_HOURS') || '1');
+        return {
+          secret: config.get('AUTH_SECRET'),
+          signOptions: {
+            expiresIn: `${expiresIn}h`,
+            algorithm: 'HS256',
+          },
+        };
       },
+      inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],

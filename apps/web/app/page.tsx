@@ -1,12 +1,13 @@
 import { Suspense } from 'react';
 import Image from 'next/image';
-import Link from "next/link";
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { LinkEntity } from '@repo/api/links/entities/link.entity';
 import { RoutePath } from '@/lib/constants';
-import { Card } from '@repo/ui/card';
 import { Code } from '@repo/ui/code';
 import { Button } from '@repo/ui/button';
+import * as request from '@/lib/request';
+import { Card } from 'antd';
 
 import styles from './page.module.css';
 
@@ -36,7 +37,8 @@ const Gradient = ({
 const LinksSection = async () => {
   const fetchLinks = async (): Promise<LinkEntity[]> => {
     try {
-      return await (await fetch('http://localhost:8080/links')).json();
+      const res = await request.get(`${process.env.NEXT_PUBLIC_API_URL}/links`);
+      return res.data;
     } catch (_) {
       return [];
     }
@@ -93,9 +95,7 @@ const RootPage = async (props: { params: Promise<{ forTest?: boolean }> }) => {
       </div>
 
       <Link href={RoutePath.SIGNIN_URL}>
-        <Button className={styles.button}>
-          Click me!
-        </Button>
+        <Button className={styles.button}>Click me!</Button>
       </Link>
 
       <div className={styles.hero}>

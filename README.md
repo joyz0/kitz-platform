@@ -117,4 +117,6 @@ npx turbo link
 5. 将通用查询方法都提取到base-service和base-controller中：算了，类型定义太麻烦
 6. 接入supabase和refine
 7. 统一接口返回格式
-8. 登录鉴权放在api好还是web好？：可能放在web更简便，api需要额外协同第三方登录的token鉴权，但放web需要解决与api的token互通和将session token转变为request header token。
+8. 登录鉴权放在api好还是web好？：可能放在web更简便，api需要额外协同第三方登录的token鉴权，但放web需要解决与api的token互通和将session token转变为request header token。最终放在了api中。
+9. 为什么next-auth默认会将token存储在cookie中：next-auth源码会在登录成功后将token放入cookie中
+10. 我每次刷新页面输出的token.exp都会变化，且是30天后的时间戳，与我预期不符
