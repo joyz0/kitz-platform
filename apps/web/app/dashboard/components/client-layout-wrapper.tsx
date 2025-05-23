@@ -8,6 +8,7 @@ import { EventType, TOKEN_STORAGE_KEY } from '@/lib/constants';
 import ErrorBoundary from '@/components/error-boundary';
 import { CustomEventBus } from '@/lib/event';
 import { App } from 'antd';
+import { Request } from '@/lib/request';
 
 const ClientLayout = dynamic(() => import('./client-layout'), {
   ssr: false,
@@ -29,6 +30,7 @@ function ClientLayoutWrapperInner({ children }: { children: React.ReactNode }) {
       message.error(error);
     });
     if (session?.accessToken) {
+      Request.token = session.accessToken;
       storage.set(TOKEN_STORAGE_KEY, session.accessToken);
     }
   }, []);

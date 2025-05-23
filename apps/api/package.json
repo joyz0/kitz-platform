@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@nestjs-modules/ioredis": "^2.0.2",
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.20",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.20",
@@ -24,6 +25,7 @@
     "@nestjs/platform-express": "^11.0.20",
     "@repo/api": "workspace:*",
     "@repo/pgdb": "workspace:^",
+    "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
     "crypto": "^1.0.1",
     "ioredis": "^5.6.1",

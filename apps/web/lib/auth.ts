@@ -9,7 +9,7 @@ import { ErrorType, RoutePath } from './constants';
 import { prisma } from '@repo/pgdb';
 import { headers, cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
-import * as request from '@/lib/request';
+import { Request } from '@/lib/request';
 
 export type NextAuthUser = Session['user'];
 
@@ -29,7 +29,7 @@ const providers: Provider[] = [
       try {
         const { email, password } = await signInSchema.parseAsync(credentials);
 
-        const res = await request.post<any>(
+        const res = await Request.post<any>(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
           {
             email,
@@ -54,11 +54,12 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
   debug: process.env.NODE_ENV === 'development',
   trustHost: true,
   providers,
-  adapter,
+  // adapter,
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: 'jwt',
     maxAge: expiresIn,
+    updateAge: expiresIn * 0.9,
   },
   pages: {
     signIn: RoutePath.SIGNIN_URL,
@@ -127,7 +128,7 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       ) {
         // token续期
         try {
-          const res = await request.post(
+          const res = await Request.post(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-token`,
             {
               refreshToken: token.refreshToken,
@@ -142,7 +143,7 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
             ...token,
             accessToken: res.data.accessToken,
             refreshToken: res.data.refreshToken,
-            exp: Date.now() + expiresIn,
+            exp: Date.now() / 1000 + expiresIn,
           };
         } catch (error) {
           return { ...token, error: ErrorType.ACCESS_DENIED };

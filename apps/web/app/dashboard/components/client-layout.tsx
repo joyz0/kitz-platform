@@ -40,8 +40,8 @@ const items: any[] = [
     icon: React.createElement(UserOutlined),
     label: '如何使用',
     children: [
-      { key: '11', label: '快速开始', url: RoutePath.DOC_STARTER },
-      { key: '12', label: '介绍', url: RoutePath.DOC_INTRO },
+      { key: RoutePath.DOC_STARTER, label: '快速开始' },
+      { key: RoutePath.DOC_INTRO, label: '介绍' },
     ],
   },
   {
@@ -49,8 +49,8 @@ const items: any[] = [
     icon: React.createElement(UserOutlined),
     label: '系统管理',
     children: [
-      { key: '21', label: '用户管理', url: RoutePath.SYSTEM_USER },
-      { key: '22', label: '邀请码管理', url: RoutePath.SYSTEM_INVITE_CODE },
+      { key: RoutePath.SYSTEM_USER, label: '用户管理' },
+      { key: RoutePath.SYSTEM_INVITE_CODE, label: '邀请码管理' },
     ],
   },
 ];
@@ -84,9 +84,7 @@ export default function ClientLayout({
     }
   };
   const handleMenuClick: MenuProps['onClick'] = (e: any) => {
-    if (e.item.props.url) {
-      router.push(e.item.props.url);
-    }
+    router.push(e.key);
   };
 
   return (

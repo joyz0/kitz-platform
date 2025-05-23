@@ -158,6 +158,7 @@ export default () => {
   const actionRef = useRef<ActionType>(null);
   return (
     <ProTable<GithubIssueItem>
+      rowKey="code"
       columns={columns}
       actionRef={actionRef}
       cardBordered
@@ -181,7 +182,6 @@ export default () => {
           console.log('value: ', value);
         },
       }}
-      rowKey="id"
       search={{
         labelWidth: 'auto',
       }}
