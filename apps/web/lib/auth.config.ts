@@ -3,7 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 
 const expiresIn = parseInt(process.env.TOKEN_EXPIRES_IN_HOURS || '1') * 60 * 60;
 // Notice this is only an object, not a full Auth.js instance
-export default {
+const config: NextAuthConfig = {
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID,
@@ -15,4 +15,6 @@ export default {
     strategy: 'jwt',
     maxAge: expiresIn,
   },
-} satisfies NextAuthConfig;
+};
+
+export default config;
