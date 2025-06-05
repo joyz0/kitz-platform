@@ -9,6 +9,7 @@ import { GroupStore } from './group-store';
 import { IMAdapter, IMClient, MessageEntity } from '../sdk/adapter';
 import { CHAT_TYPE, ERRORS } from '../sdk/constant';
 import { waitFor } from '../utils';
+import { RouterStore } from './router-store';
 
 type IMStoreStatus = 'init' | 'ready' | 'error';
 
@@ -18,6 +19,7 @@ export class RootStore {
   imNetworkStatus: IMStoreStatus = 'init';
   imUser: any;
   dbStore!: DBStore;
+  router!: RouterStore;
   metaStore!: MetaStore;
   messageStore!: MessageStore;
   conversationStore!: ConversationStore;
@@ -30,6 +32,7 @@ export class RootStore {
 
   private async initialize() {
     this.dbStore = new DBStore();
+    this.router = new RouterStore(this);
     this.metaStore = new MetaStore(this);
     this.messageStore = new MessageStore(this);
     this.conversationStore = new ConversationStore(this);
@@ -48,8 +51,10 @@ export class RootStore {
     const adapter = new IMAdapter();
     this.imClient = await adapter.connect({
       secretUrl: '/api/secret/easemob',
+      beforeConnect: (client) => {
+        this.mountListeners(client);
+      },
     });
-    this.mountListeners();
 
     await Promise.all([
       waitFor(() => this.dbStore.status, 'ready'),
@@ -71,8 +76,8 @@ export class RootStore {
     }
   }
 
-  private mountListeners() {
-    this.imClient.addEventHandler('connection', {
+  private mountListeners(client: IMClient) {
+    client.addEventHandler('connection', {
       onConnected: () => {
         runInAction(() => (this.imStatus = 'ready'));
       },
@@ -98,7 +103,7 @@ export class RootStore {
     //     getUserPresence(status);
     //   },
     // });
-    this.imClient.addEventHandler('messageListen', {
+    client.addEventHandler('messageListen', {
       onTextMessage: function (message: MessageEntity) {
         this.rootStore.messageStore.addMessage(message);
       }, // 收到文本消息。
@@ -141,7 +146,7 @@ export class RootStore {
         this.rootStore.messageStore.modifyMessage(message, true);
       },
     });
-    this.imClient.addEventHandler('friendListen', {
+    client.addEventHandler('friendListen', {
       // 收到好友邀请触发此方法。
       onContactInvited: (data: any) => {},
       // 联系人被删除时触发此方法。
@@ -187,6 +192,7 @@ export const useRootStore = () => {
 
 export const useIMClient = () => useRootStore()!.imClient;
 export const useDBStore = () => useRootStore()!.dbStore;
+export const useRouter = () => useRootStore()!.router;
 export const useMetaStore = () => useRootStore()!.metaStore;
 export const useMessageStore = () => useRootStore()!.messageStore;
 export const useConversationStore = () => useRootStore()!.conversationStore;

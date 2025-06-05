@@ -58,7 +58,9 @@ export interface ConversationEntity {
 export class EasemobAdapter implements IMAdapter<EasemobClient> {
   client!: EasemobClient;
 
-  async connect(options: IMConnectOption): Promise<EasemobClient> {
+  async connect(
+    options: IMConnectOption<EasemobClient>,
+  ): Promise<EasemobClient> {
     const { data: userInfo } = await Request.get(options.secretUrl);
     this.client = new MiniCore({
       appKey: userInfo.appKey,
@@ -71,6 +73,7 @@ export class EasemobAdapter implements IMAdapter<EasemobClient> {
       this.client.usePlugin(slientPlugin, 'slient');
       this.client.usePlugin(localCachePlugin, 'localCache');
     }
+    options.beforeConnect(this.client);
     await this.client.open({
       username: userInfo.username,
       accessToken: userInfo.accessToken,

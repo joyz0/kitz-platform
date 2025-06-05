@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react-lite';
-import { useMetaStore } from '../../store/root-store';
+import { useRootStore } from '../../store/root-store';
 
 const ChatLayout = observer(() => {
-  const { imConnectStatus } = useMetaStore();
+  const { imUser } = useRootStore();
 
-  if (imConnectStatus !== 'ready') {
+  if (!imUser) {
     return <div>请先登录</div>;
   }
 
