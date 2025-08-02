@@ -1,9 +1,8 @@
-import { flow, reaction, runInAction } from 'mobx';
+import { flow, makeAutoObservable, reaction, runInAction } from 'mobx';
 import { RootStore } from './root-store';
 import { LRUCache } from 'lru-cache';
 import _ from 'lodash';
 import { ConversationEntity } from '../sdk/adapter';
-import { IMStore } from '../core/im-store';
 import { waitFor } from '../utils';
 
 const conversationCache = new LRUCache<string, ConversationEntity>({
@@ -11,13 +10,16 @@ const conversationCache = new LRUCache<string, ConversationEntity>({
   ttl: 60_000, // 1分钟缓存
 });
 
-export class ConversationStore extends IMStore<RootStore> {
+export class ConversationStore {
+  readonly root: RootStore;
   private syncDisposer: () => void;
   conversations: ConversationEntity[] = [];
   silentConversations: ConversationEntity[] = [];
 
   constructor(rootStore: RootStore) {
-    super(rootStore);
+    this.root = rootStore;
+    makeAutoObservable(this);
+    this.initialize();
     this.syncDisposer = reaction(
       () => this.conversations.slice(),
       (conversations) => this.syncToIDB(conversations),

@@ -1,5 +1,6 @@
 import { RootStore } from './root-store';
 import { IMStore } from '../core/im-store';
+import { makeAutoObservable } from 'mobx';
 
 // 定义路由类型和枚举
 export type NavType = 'conversation' | 'contact' | 'group';
@@ -17,11 +18,18 @@ export interface Route {
   params?: Record<string, string>;
 }
 
-export class RouterStore extends IMStore<RootStore> {
+export class RouterStore {
+  readonly root: RootStore;
   // 当前路由状态
   route: Route = { nav: NavEnum.CONVERSATION };
   // 历史记录栈
   historyStack: Route[] = [];
+
+  constructor(rootStore: RootStore) {
+    this.root = rootStore;
+    makeAutoObservable(this);
+    this.initialize();
+  }
 
   // 计算当前路由对应的hash
   get currentHash(): string {

@@ -1,5 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 
+/**
+ * @deprecated
+ */
 export abstract class IMStore<T> {
   protected readonly root: T;
 

@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { LinkEntity } from '@repo/api/links/entities/link.entity';
 import { RoutePath } from '@/lib/constants';
-import { Code } from '@repo/ui/code';
-import { Button } from '@repo/ui/button';
+import { Code, Button } from '@repo/ui';
 import * as request from '@/lib/request';
 import { Card } from 'antd';
 

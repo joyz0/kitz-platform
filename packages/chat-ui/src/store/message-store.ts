@@ -1,9 +1,8 @@
-import { flow, runInAction } from 'mobx';
+import { flow, makeAutoObservable, runInAction } from 'mobx';
 import { RootStore } from './root-store';
 import { CHAT_TYPE, MAX_MESSAGE_LIST_COUNT } from '../sdk/easemob/constant';
 import _ from 'lodash';
 import { MessageEntity } from '../sdk/adapter';
-import { IMStore } from '../core/im-store';
 import { waitFor } from '../utils';
 
 interface UpdateMessagePayload {
@@ -13,8 +12,15 @@ interface UpdateMessagePayload {
   message: MessageEntity;
 }
 
-export class MessageStore extends IMStore<RootStore> {
+export class MessageStore {
+  readonly root: RootStore;
   sessionIdToMessageMap: Map<string, MessageEntity[]> = new Map();
+
+  constructor(rootStore: RootStore) {
+    this.root = rootStore;
+    makeAutoObservable(this);
+    this.initialize();
+  }
 
   initialize = flow(function* (this: MessageStore) {
     try {

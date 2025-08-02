@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useMemo } from 'react';
 import { MetaStore } from './meta-store';
-import { reaction, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { DBStore } from './db-store';
 import { MessageStore } from './message-store';
 import { ConversationStore } from './conversation-store';
@@ -10,10 +10,11 @@ import { IMAdapter, IMClient, MessageEntity } from '../sdk/adapter';
 import { CHAT_TYPE, ERRORS } from '../sdk/constant';
 import { waitFor } from '../utils';
 import { RouterStore } from './router-store';
+import { IMConnectOption } from '../core/im-adapter';
 
 type IMStoreStatus = 'init' | 'ready' | 'error';
 
-export class RootStore {
+export class RootStore<T = any> {
   imClient!: IMClient;
   imStatus: IMStoreStatus = 'init';
   imNetworkStatus: IMStoreStatus = 'init';
@@ -26,11 +27,12 @@ export class RootStore {
   contactStore!: ContactStore;
   groupStore!: GroupStore;
 
-  constructor() {
-    this.initialize();
+  constructor(props: IMConnectOption<T>) {
+    makeAutoObservable(this);
+    this.initialize(props);
   }
 
-  private async initialize() {
+  private async initialize(props: IMConnectOption<T>) {
     this.dbStore = new DBStore();
     this.router = new RouterStore(this);
     this.metaStore = new MetaStore(this);
@@ -50,7 +52,7 @@ export class RootStore {
 
     const adapter = new IMAdapter();
     this.imClient = await adapter.connect({
-      secretUrl: '/api/secret/easemob',
+      ...props,
       beforeConnect: (client) => {
         this.mountListeners(client);
       },
@@ -79,6 +81,7 @@ export class RootStore {
   private mountListeners(client: IMClient) {
     client.addEventHandler('connection', {
       onConnected: () => {
+        debugger;
         runInAction(() => (this.imStatus = 'ready'));
       },
       onDisconnected: () => {
@@ -182,7 +185,7 @@ export class RootStore {
   // }
 }
 
-const RootStoreContext = createContext<RootStore | null>(null);
+export const RootStoreContext = createContext<RootStore | null>(null);
 
 export const useRootStore = () => {
   const store = useContext(RootStoreContext);
@@ -198,11 +201,3 @@ export const useMessageStore = () => useRootStore()!.messageStore;
 export const useConversationStore = () => useRootStore()!.conversationStore;
 export const useContactStore = () => useRootStore()!.contactStore;
 export const useGroupStore = () => useRootStore()!.groupStore;
-
-export const RootStoreProvider: React.FC<PropsWithChildren> = ({
-  children,
-}) => {
-  const store = useMemo(() => new RootStore(), []);
-
-  return <RootStoreContext value={store}>{children}</RootStoreContext>;
-};

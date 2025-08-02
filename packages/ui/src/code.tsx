@@ -1,4 +1,4 @@
-export function Code({
+export const Code = function Code({
   children,
   className,
 }: {
@@ -6,4 +6,4 @@ export function Code({
   className?: string;
 }) {
   return <code className={className}>{children}</code>;
-}
+};

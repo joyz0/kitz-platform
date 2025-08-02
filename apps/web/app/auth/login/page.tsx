@@ -6,17 +6,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/ui/card';
+  Input,
+  Button,
+  Label,
+} from '@repo/ui';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { RoutePath } from '@/lib/constants';
-import { Input } from '@repo/ui/input';
-import { Button } from '@repo/ui/button';
-import { Label } from '@repo/ui/label';
-import { Suspense, useActionState } from 'react';
+import { Suspense, useActionState, useEffect, useState } from 'react';
 import { login, loginByProvider } from '@/actions/login';
 import { LoadingOutlined } from '@ant-design/icons';
 import { encryptFrontPassword } from '../utils';
+import { Request } from '@/lib/request';
+import dynamic from 'next/dynamic';
+
+const ChatUIWrapper = dynamic(
+  () => import('@repo/chat-ui').then((mod) => mod.ChatUI),
+  { ssr: false },
+);
 
 function Login() {
   const searchParams = useSearchParams();
@@ -32,6 +39,22 @@ function Login() {
   }, {});
   const [providerFormResult, providerFormAction, isProviderPending] =
     useActionState<KitResponse, FormData>(loginByProvider, {});
+
+  const [config, setConfig] = useState<any>();
+  const initChatUI = async () => {
+    const { data } = await Request.get(
+      `${window.location.origin}/api/secret/easemob`,
+    );
+    setConfig({
+      mountId: 'chat-ui-container',
+      appKey: data.appKey,
+      username: data.username,
+      accessToken: data.accessToken,
+    });
+  };
+  useEffect(() => {
+    initChatUI();
+  }, []);
 
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
@@ -115,6 +138,7 @@ function Login() {
           </div>
         </CardContent>
       </Card>
+      <ChatUIWrapper {...config} />
     </div>
   );
 }

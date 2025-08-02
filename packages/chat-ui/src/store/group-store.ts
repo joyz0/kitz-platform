@@ -1,11 +1,17 @@
 import { RootStore } from './root-store';
-import { flow, runInAction } from 'mobx';
+import { flow, makeAutoObservable, runInAction } from 'mobx';
 import _ from 'lodash';
-import { IMStore } from '../core/im-store';
 import { waitFor } from '../utils';
 
-export class GroupStore extends IMStore<RootStore> {
+export class GroupStore {
+  readonly root: RootStore;
   groups: any[] = [];
+
+  constructor(rootStore: RootStore) {
+    this.root = rootStore;
+    makeAutoObservable(this);
+    this.initialize();
+  }
 
   initialize = flow(function* (this: GroupStore) {
     try {

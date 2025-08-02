@@ -1,12 +1,18 @@
 import { RootStore } from './root-store';
-import { flow, runInAction } from 'mobx';
+import { flow, makeAutoObservable, runInAction } from 'mobx';
 import _ from 'lodash';
-import { IMStore } from '../core/im-store';
 import { waitFor } from '../utils';
 
-export class ContactStore extends IMStore<RootStore> {
+export class ContactStore {
+  readonly root: RootStore;
   contactMap: Map<string, any> = new Map();
   contactInfoMap: Map<string, any> = new Map();
+
+  constructor(rootStore: RootStore) {
+    this.root = rootStore;
+    makeAutoObservable(this);
+    this.initialize();
+  }
 
   initialize = flow(function* (this: ContactStore) {
     try {

@@ -1,10 +1,8 @@
-import MiniCore from 'easemob-websdk/miniCore/miniCore';
 import * as contactPlugin from 'easemob-websdk/contact/contact';
 import * as slientPlugin from 'easemob-websdk/silent/silent';
 import * as groupPlugin from 'easemob-websdk/group/group';
 import * as presencePlugin from 'easemob-websdk/presence/presence';
 import * as localCachePlugin from 'easemob-websdk/localCache/localCache';
-import { Request } from '@/lib/request';
 import { IMAdapter, IMConnectOption } from '../../core/im-adapter';
 
 export interface EasemobClient {
@@ -61,9 +59,9 @@ export class EasemobAdapter implements IMAdapter<EasemobClient> {
   async connect(
     options: IMConnectOption<EasemobClient>,
   ): Promise<EasemobClient> {
-    const { data: userInfo } = await Request.get(options.secretUrl);
-    this.client = new MiniCore({
-      appKey: userInfo.appKey,
+    const MiniCore = await import('easemob-websdk/miniCore/miniCore');
+    this.client = new MiniCore.default({
+      appKey: options.appKey,
     });
     if (Object.keys(this.client).length) {
       //注册插件
@@ -73,10 +71,10 @@ export class EasemobAdapter implements IMAdapter<EasemobClient> {
       this.client.usePlugin(slientPlugin, 'slient');
       this.client.usePlugin(localCachePlugin, 'localCache');
     }
-    options.beforeConnect(this.client);
+    options.beforeConnect?.(this.client);
     await this.client.open({
-      username: userInfo.username,
-      accessToken: userInfo.accessToken,
+      username: options.username,
+      accessToken: options.accessToken,
     });
     return this.client;
   }

@@ -6,12 +6,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/ui/card';
+  Input,
+  Button,
+  Label,
+} from '@repo/ui';
 import Link from 'next/link';
 import { RoutePath } from '@/lib/constants';
-import { Input } from '@repo/ui/input';
-import { Button } from '@repo/ui/button';
-import { Label } from '@repo/ui/label';
 import { signUp } from '@/actions/login';
 import { useActionState, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';

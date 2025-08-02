@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { openDB, DBSchema, IDBPDatabase } from "idb";
-import { flushSync } from "react-dom";
-import clsx from "clsx";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { flushSync } from 'react-dom';
+import clsx from 'clsx';
 import useSWR from 'swr';
 import { get, post } from '@/lib/request';
-import { getLocal, setLocal, CookieUtil } from "@repo/ui/utils";
+import { getLocal, setLocal } from '@repo/ui';
 import {
   d_ignore,
   d_login,
   err_http,
   err_irrelevant,
   err_not_login,
-} from "./constant";
+} from './constant';
 
 interface Message {
   id: string;
@@ -29,11 +29,11 @@ interface ChatDBSchema extends DBSchema {
   messages: {
     key: string;
     value: Message;
-    indexes: { "by-timestamp": number };
+    indexes: { 'by-timestamp': number };
   };
 }
 
-type MessageType = "text" | "error" | "directive" | "media" | string;
+type MessageType = 'text' | 'error' | 'directive' | 'media' | string;
 interface MessageSchema {
   type: MessageType;
   query: string;
@@ -42,19 +42,19 @@ interface MessageSchema {
 }
 
 function buildMessageSchema(msg: string, parse = true): MessageSchema {
-  let type: MessageType = "text";
+  let type: MessageType = 'text';
   let payload = null;
-  if (msg.startsWith("err_")) {
-    type = "error";
-  } else if (msg.startsWith("d_")) {
-    type = "directive";
-  } else if (msg.startsWith("{")) {
-    type = "media";
+  if (msg.startsWith('err_')) {
+    type = 'error';
+  } else if (msg.startsWith('d_')) {
+    type = 'directive';
+  } else if (msg.startsWith('{')) {
+    type = 'media';
     payload = parse ? JSON.parse(msg) : null;
   }
   return {
     type,
-    query: "",
+    query: '',
     answer: msg,
     payload,
   };
@@ -66,7 +66,7 @@ const PAGE_SIZE = 10; // 分页大小
 const ChatBot = () => {
   // 组件状态
   const [isOpen, setIsOpen] = useState(false);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -79,11 +79,11 @@ const ChatBot = () => {
   const conversationId = useRef<string>(null);
 
   async function connect() {
-    const data = await post("/api/dify/connect", {
-      conversation_id: conversationId.current || "",
+    const data = await post('/api/dify/connect', {
+      conversation_id: conversationId.current || '',
     });
     if (!conversationId.current) {
-      setLocal("dify_conversation_id", data.conversation_id);
+      setLocal('dify_conversation_id', data.conversation_id);
       conversationId.current = data.conversation_id;
     }
     if (data.answer === d_ignore) {
@@ -94,14 +94,14 @@ const ChatBot = () => {
   // 初始化IndexedDB
   useEffect(() => {
     const initDB = async () => {
-      const db = await openDB<ChatDBSchema>("chat-db", 1, {
+      const db = await openDB<ChatDBSchema>('chat-db', 1, {
         upgrade(db) {
-          const store = db.createObjectStore("messages", { keyPath: "id" });
-          store.createIndex("by-timestamp", "timestamp");
+          const store = db.createObjectStore('messages', { keyPath: 'id' });
+          store.createIndex('by-timestamp', 'timestamp');
         },
       });
       dbRef.current = db;
-      conversationId.current = getLocal("dify_conversation_id");
+      conversationId.current = getLocal('dify_conversation_id');
       loadMessages();
     };
     initDB();
@@ -112,10 +112,10 @@ const ChatBot = () => {
     if (!dbRef.current) return;
 
     setIsLoadingMore(true);
-    const tx = dbRef.current.transaction("messages", "readonly");
-    const index = tx.store.index("by-timestamp");
+    const tx = dbRef.current.transaction('messages', 'readonly');
+    const index = tx.store.index('by-timestamp');
 
-    let cursor = await index.openCursor(null, "prev");
+    let cursor = await index.openCursor(null, 'prev');
     const results: Message[] = [];
     let count = 0;
     const offset = (newPage - 1) * PAGE_SIZE;
@@ -141,12 +141,12 @@ const ChatBot = () => {
   // 保存消息到数据库
   const saveMessage = async (message: Message) => {
     if (!dbRef.current) return;
-    await dbRef.current.put("messages", message);
+    await dbRef.current.put('messages', message);
   };
 
   // 滚动到底部（带平滑动画）
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   useEffect(() => {
@@ -157,8 +157,8 @@ const ChatBot = () => {
 
   const getTimeString = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -169,7 +169,7 @@ const ChatBot = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -185,7 +185,7 @@ const ChatBot = () => {
       id: Date.now().toString(),
       content: inputMessage,
       isUser: true,
-      nickname: "我",
+      nickname: '我',
       timestamp: Date.now(),
     };
 
@@ -194,28 +194,28 @@ const ChatBot = () => {
     // 临时机器人消息
     const tempBotMessage: Message = {
       id: `temp-${Date.now()}`,
-      content: "正在思考中...",
+      content: '正在思考中...',
       isUser: false,
-      nickname: "智能助手",
+      nickname: '智能助手',
       timestamp: Date.now(),
       isTemp: true,
     };
 
     // 更新消息列表
-    if (querySchema.type === "text") {
+    if (querySchema.type === 'text') {
       setMessages((prev) => [...prev, userMessage, tempBotMessage]);
       setIsLoadingMore(false);
       await saveMessage(userMessage);
     }
-    setInputMessage("");
+    setInputMessage('');
 
     try {
-      const data = await post("/api/dify/chat", {
+      const data = await post('/api/dify/chat', {
         message: userMessage.content,
-        conversation_id: conversationId.current || "",
+        conversation_id: conversationId.current || '',
       });
       if (!conversationId.current) {
-        setLocal("dify_conversation_id", data.conversation_id);
+        setLocal('dify_conversation_id', data.conversation_id);
         conversationId.current = data.conversation_id;
       }
       // 模拟5秒延迟的API请求
@@ -230,15 +230,15 @@ const ChatBot = () => {
         id: data.message_id,
         content: data.answer,
         isUser: false,
-        nickname: "智能助手",
+        nickname: '智能助手',
         timestamp: data.created_at * 1000,
       };
       const answerSchema = buildMessageSchema(botMessage.content, false);
 
       // 替换临时消息
-      if (querySchema.type === "text" && answerSchema.type !== d_ignore) {
+      if (querySchema.type === 'text' && answerSchema.type !== d_ignore) {
         setMessages((prev) =>
-          prev.map((msg) => (msg.id === tempBotMessage.id ? botMessage : msg))
+          prev.map((msg) => (msg.id === tempBotMessage.id ? botMessage : msg)),
         );
         await saveMessage(botMessage);
       }
@@ -247,9 +247,9 @@ const ChatBot = () => {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempBotMessage.id
-            ? { ...msg, content: "请求失败，请重试" }
-            : msg
-        )
+            ? { ...msg, content: '请求失败，请重试' }
+            : msg,
+        ),
       );
     } finally {
       setIsSending(false);
@@ -289,10 +289,10 @@ const ChatBot = () => {
       {/* 聊天窗口 */}
       <div
         className={clsx(
-          "absolute bottom-16 right-0 w-96 bg-white rounded-xl shadow-xl transform transition-all duration-300 origin-bottom-right",
+          'absolute bottom-16 right-0 w-96 bg-white rounded-xl shadow-xl transform transition-all duration-300 origin-bottom-right',
           {
             hidden: !isOpen,
-          }
+          },
         )}
       >
         {/* 头部 */}
@@ -334,14 +334,14 @@ const ChatBot = () => {
                 {/* 消息内容 */}
                 <div
                   className={`flex ${
-                    message.isUser ? "flex-row-reverse" : ""
+                    message.isUser ? 'flex-row-reverse' : ''
                   } gap-3`}
                 >
                   <img
                     src={
                       message.isUser
-                        ? "https://i.pravatar.cc/40?u=user"
-                        : "https://i.pravatar.cc/40?u=bot"
+                        ? 'https://i.pravatar.cc/40?u=user'
+                        : 'https://i.pravatar.cc/40?u=bot'
                     }
                     alt="Avatar"
                     className="w-8 h-8 rounded-full"
@@ -350,7 +350,7 @@ const ChatBot = () => {
                   <div>
                     <div
                       className={`text-xs text-gray-600 mb-1 ${
-                        message.isUser ? "text-right" : "text-left"
+                        message.isUser ? 'text-right' : 'text-left'
                       }`}
                     >
                       {message.nickname}
@@ -359,17 +359,17 @@ const ChatBot = () => {
                       className={`max-w-48 p-3 rounded-lg transition-all duration-1000
                                    ${
                                      message.isUser
-                                       ? "bg-blue-500 text-white"
+                                       ? 'bg-blue-500 text-white'
                                        : `bg-gray-100 ${
                                            message.isTemp
-                                             ? "animate-pulse italic"
-                                             : ""
+                                             ? 'animate-pulse italic'
+                                             : ''
                                          }`
                                    }
                                    ${
                                      message.isUser
-                                       ? "hover:bg-blue-600"
-                                       : "hover:bg-gray-200"
+                                       ? 'hover:bg-blue-600'
+                                       : 'hover:bg-gray-200'
                                    }`}
                     >
                       <p className="text-sm">{message.content}</p>

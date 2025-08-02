@@ -10,7 +10,7 @@ const nextConfig = {
       ],
     },
   },
-  transpilePackages: ['@repo/ui'],
+  transpilePackages: ['@repo/ui', '@repo/chat-ui'],
 };
 
 export default nextConfig;
