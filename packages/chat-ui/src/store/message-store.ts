@@ -26,7 +26,7 @@ export class MessageStore {
     try {
       yield Promise.all([
         waitFor(() => this.root.dbStore.status, 'ready'),
-        waitFor(() => this.root.imStatus, 'ready'),
+        waitFor(() => Boolean(this.root.imClient), true),
       ]);
     } catch (error) {
       console.error('Failed to load messages:', error);

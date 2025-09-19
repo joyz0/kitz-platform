@@ -51,6 +51,7 @@ export class RootStore<T = any> {
     );
 
     const adapter = new IMAdapter();
+    console.log(111, props);
     this.imClient = await adapter.connect({
       ...props,
       beforeConnect: (client) => {
@@ -81,7 +82,6 @@ export class RootStore<T = any> {
   private mountListeners(client: IMClient) {
     client.addEventHandler('connection', {
       onConnected: () => {
-        debugger;
         runInAction(() => (this.imStatus = 'ready'));
       },
       onDisconnected: () => {

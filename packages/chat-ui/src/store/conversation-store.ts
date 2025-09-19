@@ -37,7 +37,7 @@ export class ConversationStore {
     try {
       yield Promise.all([
         waitFor(() => this.root.dbStore.status, 'ready'),
-        waitFor(() => this.root.imStatus, 'ready'),
+        waitFor(() => Boolean(this.root.imClient), true),
       ]);
       this.fetchConversations();
       this.fetchSilentConversations();

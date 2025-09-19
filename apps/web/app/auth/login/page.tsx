@@ -10,10 +10,18 @@ import {
   Button,
   Label,
 } from '@repo/ui';
+import { ChatWidgetProps } from '@repo/chat-ui';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { RoutePath } from '@/lib/constants';
-import { Suspense, useActionState, useEffect, useState } from 'react';
+import {
+  Suspense,
+  use,
+  useActionState,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { login, loginByProvider } from '@/actions/login';
 import { LoadingOutlined } from '@ant-design/icons';
 import { encryptFrontPassword } from '../utils';
@@ -21,8 +29,37 @@ import { Request } from '@/lib/request';
 import dynamic from 'next/dynamic';
 
 const ChatUIWrapper = dynamic(
-  () => import('@repo/chat-ui').then((mod) => mod.ChatUI),
-  { ssr: false },
+  () => {
+    if (typeof window === 'undefined') {
+      return Promise.resolve(() => <div>服务端环境无法加载聊天组件</div>);
+    }
+    const origin = window.location.origin;
+    return Request.get(`${origin}/api/secret/easemob`)
+      .then((res) => {
+        const config = {
+          appKey: res.data.appKey,
+          username: res.data.username,
+          accessToken: res.data.accessToken,
+        };
+        return import('@repo/chat-ui').then(
+          (mod) => (props: ChatWidgetProps) => (
+            <mod.ChatApp config={config} {...props} />
+          ),
+        );
+      })
+      .catch((error) => {
+        console.error('聊天组件初始化失败:', error);
+        return Promise.resolve(() => (
+          <div className="text-red-500 p-4">
+            <p>聊天组件加载失败: {error.message}</p>
+          </div>
+        ));
+      });
+  },
+  {
+    ssr: false,
+    loading: () => <div className="text-center">加载聊天组件...</div>,
+  },
 );
 
 function Login() {
@@ -40,21 +77,21 @@ function Login() {
   const [providerFormResult, providerFormAction, isProviderPending] =
     useActionState<KitResponse, FormData>(loginByProvider, {});
 
-  const [config, setConfig] = useState<any>();
-  const initChatUI = async () => {
-    const { data } = await Request.get(
-      `${window.location.origin}/api/secret/easemob`,
-    );
-    setConfig({
-      mountId: 'chat-ui-container',
-      appKey: data.appKey,
-      username: data.username,
-      accessToken: data.accessToken,
-    });
-  };
-  useEffect(() => {
-    initChatUI();
-  }, []);
+  // const [config, setConfig] = useState<any>();
+  // const initChatUI = async () => {
+  //   const { data } = await Request.get(
+  //     `${window.location.origin}/api/secret/easemob`,
+  //   );
+  //   setConfig({
+  //     mountId: 'chat-ui-container',
+  //     appKey: data.appKey,
+  //     username: data.username,
+  //     accessToken: data.accessToken,
+  //   });
+  // };
+  // useEffect(() => {
+  //   initChatUI();
+  // }, []);
 
   return (
     <div className="flex h-screen w-full items-center justify-center px-4">
@@ -138,7 +175,9 @@ function Login() {
           </div>
         </CardContent>
       </Card>
-      <ChatUIWrapper {...config} />
+      <Suspense>
+        <ChatUIWrapper />
+      </Suspense>
     </div>
   );
 }

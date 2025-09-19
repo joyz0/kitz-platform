@@ -18,7 +18,7 @@ export class ContactStore {
     try {
       yield Promise.all([
         waitFor(() => this.root.dbStore.status, 'ready'),
-        waitFor(() => this.root.imStatus, 'ready'),
+        waitFor(() => Boolean(this.root.imClient), true),
       ]);
       this.fetchAllContacts();
     } catch (error) {
