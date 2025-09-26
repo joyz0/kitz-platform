@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { UserRoleEnum } from '../../enums/user-role';
 
 // 完整的用户 schema（后端实体）
-export const UserSchema = z.object({
+export const userSchema = z.object({
   id: z.string().cuid(),
   name: z.string().nullable(),
   password: z.string(), // 🔒 后端专用（用于验证）
@@ -14,4 +14,4 @@ export const UserSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 
-export type User = z.infer<typeof UserSchema>;
+export type User = z.infer<typeof userSchema>;

@@ -41,11 +41,94 @@ export const getLocal = (key: string) => {
   return item.value;
 };
 
+// ProTable参数转换工具类
+export class ProTableUtils {
+  /**
+   * 将ProTable的params、sort、filter参数转换为后端DTO格式
+   * @param params ProTable的查询参数
+   * @param sort ProTable的排序参数
+   * @param filter ProTable的过滤参数
+   * @param options 转换选项
+   * @returns 转换后的查询参数
+   */
+  static transformParams(
+    params: Record<string, any>,
+    sort: Record<string, any>,
+    filter: Record<string, any>,
+    options: {
+      defaultPageSize?: number;
+      defaultSortBy?: string;
+      defaultSortOrder?: 'ascend' | 'descend';
+    } = {}
+  ) {
+    const {
+      defaultPageSize = 10,
+      defaultSortBy = 'createdAt',
+      defaultSortOrder = 'descend'
+    } = options;
+
+    // 基础查询参数转换
+    const queryParams: any = {
+      ...params,
+      pageNo: params.current || 1,  // current -> pageNo
+      pageSize: params.pageSize || defaultPageSize,
+    };
+
+    // 删除ProTable的current参数，避免重复
+    delete queryParams.current;
+
+    // 处理排序参数
+    if (sort && Object.keys(sort).length > 0) {
+      queryParams.sortBy = Object.keys(sort)[0];
+      queryParams.sortOrder = Object.values(sort)[0];
+    } else {
+      queryParams.sortBy = defaultSortBy;
+      queryParams.sortOrder = defaultSortOrder;
+    }
+
+    // 处理筛选参数（如果需要的话）
+    if (filter && Object.keys(filter).length > 0) {
+      Object.assign(queryParams, filter);
+    }
+
+    return queryParams;
+  }
+
+  /**
+   * 创建ProTable的request函数
+   * @param requestFunction 请求函数，接收转换后的参数并返回Promise
+   * @param options 转换选项
+   * @returns ProTable的request函数
+   */
+  static createRequestFunction(
+    requestFunction: (params: any) => Promise<any>,
+    options: {
+      defaultPageSize?: number;
+      defaultSortBy?: string;
+      defaultSortOrder?: 'ascend' | 'descend';
+      onParamsTransform?: (params: any) => any;
+    } = {}
+  ) {
+    return async (params: any, sort: any, filter: any) => {
+      console.log('ProTable params:', params, sort, filter);
+
+      let queryParams = ProTableUtils.transformParams(params, sort, filter, options);
+
+      // 允许自定义参数转换
+      if (options.onParamsTransform) {
+        queryParams = options.onParamsTransform(queryParams);
+      }
+
+      return requestFunction(queryParams);
+    };
+  }
+}
+
 export class CookieUtil {
   // 获取 Cookie
   static get(name: string) {
     const cookies = document.cookie.split("; ");
-    
+
     for (const cookie of cookies) {
       const [cookieName, cookieValue] = cookie.split("=");
       if (cookieName === encodeURIComponent(name) && cookieValue) {

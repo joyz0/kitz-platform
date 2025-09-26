@@ -1,56 +1,127 @@
-import { Injectable } from '@nestjs/common';
-
-import { Link, LinkCreateDto, LinkUpdateDto } from '@repo/types';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { linkRepo } from '@repo/database';
+import {
+  Link,
+  LinkCreateDto,
+  LinkUpdateDto,
+  LinkQueryDto,
+  createPaginateResponse,
+  ApiResponse,
+} from '@repo/types';
+import { BaseService } from '../common/base.service';
 
 @Injectable()
-export class LinksService {
-  private readonly _links: Link[] = [
-    {
-      id: 0,
-      title: 'Docs',
-      url: 'https://turbo.build/docs',
-      description:
-        'Find in-depth information about Turborepo features and API.',
-    },
-    {
-      id: 1,
-      title: 'Learn',
-      url: 'https://turbo.build/docs/handbook',
-      description: 'Learn more about monorepos with our handbook.',
-    },
-    {
-      id: 2,
-      title: 'Templates',
-      url: 'https://turbo.build/docs/getting-started/from-example',
-      description:
-        'Choose from over 15 examples and deploy with a single click.',
-    },
-    {
-      id: 3,
-      title: 'Deploy',
-      url: 'https://vercel.com/new',
-      description:
-        'Instantly deploy your Turborepo to a shareable URL with Vercel.',
-    },
-  ];
-
-  create(createLinkDto: LinkCreateDto) {
-    return `This action adds a new link ${createLinkDto}`;
+export class LinksService extends BaseService {
+  constructor() {
+    super(LinksService.name);
   }
 
-  findAll() {
-    return this._links;
+  async create(createLinkDto: LinkCreateDto): Promise<Link> {
+    try {
+      this.validateRequired(createLinkDto.title, 'title');
+      this.validateRequired(createLinkDto.url, 'url');
+
+      const link = await linkRepo.create({
+        data: createLinkDto,
+      });
+
+      this.logSuccess('Link created', { id: link.id, title: link.title });
+      return link;
+    } catch (error) {
+      this.handleError(error, 'create link');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} link`;
+  async findAll(query: LinkQueryDto): Promise<ApiResponse<any>> {
+    try {
+      // 构建查询条件
+      const where: any = {};
+      if (query.title) where.title = { contains: query.title };
+      if (query.url) where.url = { contains: query.url };
+      if (query.description) where.description = { contains: query.description };
+
+      // 时间范围查询
+      if (query.startTime || query.endTime) {
+        where.createdAt = {};
+        if (query.startTime) where.createdAt.gte = query.startTime;
+        if (query.endTime) where.createdAt.lte = query.endTime;
+      }
+
+      // 排序参数转换
+      const orderBy = {
+        [query.sortBy]: query.sortOrder === 'ascend' ? 'asc' : 'desc',
+      };
+
+      const pageNo = query.pageNo;
+      const pageSize = query.pageSize;
+
+      const [data, total] = await Promise.all([
+        linkRepo.findMany({
+          where,
+          skip: (pageNo - 1) * pageSize,
+          take: pageSize,
+          orderBy,
+        }),
+        linkRepo.count({ where }),
+      ]);
+
+      this.logSuccess('Links retrieved', { total, pageNo, pageSize });
+      return createPaginateResponse(data, total, pageNo, pageSize);
+    } catch (error) {
+      this.handleError(error, 'fetch links');
+    }
   }
 
-  update(id: number, updateLinkDto: LinkUpdateDto) {
-    return `This action updates a #${id} link ${updateLinkDto}`;
+  async findOne(id: string): Promise<Link> {
+    try {
+      this.validateRequired(id, 'id');
+
+      const link = await linkRepo.findById(id);
+      if (!link) {
+        this.logWarning('Link not found', `ID: ${id}`);
+        throw new NotFoundException(`Link with ID ${id} not found`);
+      }
+
+      return link;
+    } catch (error) {
+      this.handleError(error, `find link by ID: ${id}`);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} link`;
+  async update(id: string, updateLinkDto: LinkUpdateDto): Promise<Link> {
+    try {
+      this.validateRequired(id, 'id');
+
+      // 确保链接存在
+      await this.findOne(id);
+
+      const link = await linkRepo.update({
+        where: { id },
+        data: updateLinkDto,
+      });
+
+      this.logSuccess('Link updated', {
+        id: link.id,
+        updatedFields: Object.keys(updateLinkDto)
+      });
+      return link;
+    } catch (error) {
+      this.handleError(error, `update link with ID: ${id}`);
+    }
+  }
+
+  async remove(id: string): Promise<Link> {
+    try {
+      this.validateRequired(id, 'id');
+
+      // 确保链接存在
+      await this.findOne(id);
+
+      const link = await linkRepo.deleteById(id);
+      this.logSuccess('Link deleted', { id: link.id });
+      return link;
+    } catch (error) {
+      this.handleError(error, `delete link with ID: ${id}`);
+    }
   }
 }

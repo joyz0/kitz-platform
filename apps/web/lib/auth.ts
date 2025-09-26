@@ -3,7 +3,7 @@ import type { Session } from 'next-auth';
 import type { Provider } from 'next-auth/providers';
 import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
-import { signInSchema } from './zod';
+import { loginDto } from '@repo/types';
 import { PrismaAdapter } from './prisma-adapter';
 import { ErrorType, RoutePath } from './constants';
 import { prisma } from '@repo/prisma';
@@ -28,7 +28,7 @@ const providers: Provider[] = [
     },
     authorize: async (credentials) => {
       try {
-        const { email, password } = await signInSchema.parseAsync(credentials);
+        const { email, password } = await loginDto.parseAsync(credentials);
 
         const res = await Request.post<any>(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,

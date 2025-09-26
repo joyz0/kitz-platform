@@ -12,13 +12,12 @@ import {
 } from '@nestjs/common';
 import { InviteCodesService } from './invite-codes.service';
 import {
-  InviteCodeCreateDto,
-  InviteCodeUpdateDto,
-  InviteCodeQueryDto,
-  InviteCodeCreateSchema,
-  InviteCodeUpdateSchema,
-  InviteCodeQuerySchema,
-  InviteCode
+  type InviteCodeCreateDto,
+  type InviteCodeUpdateDto,
+  type InviteCodeQueryDto,
+  inviteCodeCreateSchema,
+  inviteCodeUpdateSchema,
+  inviteCodeQuerySchema,
 } from '@repo/types';
 import { AuthGuard } from '@nestjs/passport';
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
@@ -32,19 +31,17 @@ export class InviteCodesController {
   constructor(private readonly inviteCodesService: InviteCodesService) {}
 
   @Post()
-  @UsePipes(new ZodValidationPipe(InviteCodeCreateSchema))
+  @UsePipes(new ZodValidationPipe(inviteCodeCreateSchema))
   create(@Body() createInviteCodeDto: InviteCodeCreateDto) {
     return this.inviteCodesService.create(createInviteCodeDto);
   }
 
-  @Get('paginate')
-  paginate(@Query(new ZodValidationPipe(InviteCodeQuerySchema)) query: InviteCodeQueryDto) {
-    return this.inviteCodesService.paginate(query);
-  }
-
   @Get()
-  findAll() {
-    return this.inviteCodesService.findAll();
+  findAll(
+    @Query(new ZodValidationPipe(inviteCodeQuerySchema))
+    query: InviteCodeQueryDto,
+  ) {
+    return this.inviteCodesService.findAll(query);
   }
 
   @Get(':code')
@@ -53,7 +50,7 @@ export class InviteCodesController {
   }
 
   @Patch(':code')
-  @UsePipes(new ZodValidationPipe(InviteCodeUpdateSchema))
+  @UsePipes(new ZodValidationPipe(inviteCodeUpdateSchema))
   update(
     @Param('code') code: string,
     @Body() updateInviteCodeDto: InviteCodeUpdateDto,

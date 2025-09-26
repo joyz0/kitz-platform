@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { inviteCodeRepository as inviteCodeRepo } from '@repo/database';
+import { inviteCodeRepo } from '@repo/database';
 import {
   InviteCode,
   InviteCodeCreateDto,
@@ -7,7 +7,7 @@ import {
   InviteCodeQueryDto,
   InviteCodeType,
   createPaginateResponse,
-  ApiResponse
+  ApiResponse,
 } from '@repo/types';
 import { BaseService } from '../common/base.service';
 import crypto from 'crypto';
@@ -20,7 +20,8 @@ export class InviteCodesService extends BaseService {
 
   async create(createInviteCodeDto: InviteCodeCreateDto): Promise<InviteCode> {
     try {
-      const generatedCode = createInviteCodeDto.code || this.generateInviteCode();
+      const generatedCode =
+        createInviteCodeDto.code || this.generateInviteCode();
       const inviteCode = await inviteCodeRepo.create({
         data: {
           ...createInviteCodeDto,
@@ -29,46 +30,54 @@ export class InviteCodesService extends BaseService {
         },
       });
 
-      this.logSuccess('InviteCode created', { code: inviteCode.code, type: inviteCode.type });
+      this.logSuccess('InviteCode created', {
+        code: inviteCode.code,
+        type: inviteCode.type,
+      });
       return inviteCode;
     } catch (error) {
       this.handleError(error, 'create invite code');
     }
   }
 
-  async paginate(query: InviteCodeQueryDto): Promise<ApiResponse<any>> {
+  async findAll(query: InviteCodeQueryDto): Promise<ApiResponse<any>> {
     try {
+      // 构建查询条件
+      const where: any = {};
+      if (query.code) where.code = { contains: query.code };
+      if (query.type) where.type = query.type;
+      if (query.userId) where.userId = query.userId;
+
+      // 时间范围查询
+      if (query.startTime || query.endTime) {
+        where.createdAt = {};
+        if (query.startTime) where.createdAt.gte = query.startTime;
+        if (query.endTime) where.createdAt.lte = query.endTime;
+      }
+
+      // 排序参数转换
       const orderBy = {
-        [query.sortBy || 'createdAt']: (query.sortOrder || 'DESC').toLowerCase(),
+        [query.sortBy]: query.sortOrder === 'ascend' ? 'asc' : 'desc',
       };
 
-      const pageNo = query.pageNo || 1;
-      const pageSize = Math.min(query.pageSize || 10, 100); // 限制最大页面大小
+      const pageNo = query.pageNo;
+      const pageSize = query.pageSize;
 
       const [data, total] = await Promise.all([
         inviteCodeRepo.findMany({
-          where: query.where || {},
+          where,
           skip: (pageNo - 1) * pageSize,
           take: pageSize,
           orderBy,
+          include: { user: true }, // 包含用户信息
         }),
-        inviteCodeRepo.count({ where: query.where || {} }),
+        inviteCodeRepo.count({ where }),
       ]);
 
-      this.logSuccess('InviteCodes paginated', { total, pageNo, pageSize });
+      this.logSuccess('InviteCodes retrieved', { total, pageNo, pageSize });
       return createPaginateResponse(data, total, pageNo, pageSize);
     } catch (error) {
-      this.handleError(error, 'paginate invite codes');
-    }
-  }
-
-  async findAll(): Promise<InviteCode[]> {
-    try {
-      const inviteCodes = await inviteCodeRepo.findAll();
-      this.logSuccess('Retrieved invite codes', { count: inviteCodes.length });
-      return inviteCodes;
-    } catch (error) {
-      this.handleError(error, 'fetch all invite codes');
+      this.handleError(error, 'fetch invite codes');
     }
   }
 
@@ -88,7 +97,10 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-  async update(code: string, updateInviteCodeDto: InviteCodeUpdateDto): Promise<InviteCode> {
+  async update(
+    code: string,
+    updateInviteCodeDto: InviteCodeUpdateDto,
+  ): Promise<InviteCode> {
     try {
       this.validateRequired(code, 'code');
 
@@ -100,7 +112,10 @@ export class InviteCodesService extends BaseService {
         data: updateInviteCodeDto,
       });
 
-      this.logSuccess('InviteCode updated', { code, updatedFields: Object.keys(updateInviteCodeDto) });
+      this.logSuccess('InviteCode updated', {
+        code,
+        updatedFields: Object.keys(updateInviteCodeDto),
+      });
       return inviteCode;
     } catch (error) {
       this.handleError(error, `update invite code: ${code}`);

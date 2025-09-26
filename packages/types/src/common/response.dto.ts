@@ -1,27 +1,25 @@
 import { z } from 'zod';
-import { PaginatedResponseSchema } from './pagination.schema';
 
-// 分页结果 meta 信息 (重用 pagination.schema 中的定义)
-export type PaginateMeta = z.infer<typeof PaginatedResponseSchema>;
+// 分页元信息
+export const PaginationMetaSchema = z.object({
+  pageNo: z.number(),
+  pageSize: z.number(),
+  total: z.number(),
+  totalPages: z.number(),
+});
 
-// 分页结果 schema 工厂函数
-export const createPaginateResultSchema = <T extends z.ZodTypeAny>(itemSchema: T) => {
-  return z.object({
-    items: z.array(itemSchema),
-    meta: PaginatedResponseSchema,
-  });
-};
+export type PaginationMeta = z.infer<typeof PaginationMetaSchema>;
 
-// 通用 API 响应
+// API 响应基础结构
 export const ApiResponseSchema = z.object({
   ok: z.boolean(),
   code: z.number(),
   message: z.string().optional(),
-  data: z.any().optional(),
   timestamp: z.number().optional(),
 });
 
-export type ApiResponse<T = any> = {
+// 数据响应类型定义
+export type ApiResponse<T = unknown> = {
   ok: boolean;
   code: number;
   message?: string;
@@ -29,52 +27,82 @@ export type ApiResponse<T = any> = {
   timestamp?: number;
 };
 
-// API 响应工厂函数
+// 分页数据响应类型
+export type PaginatedApiResponse<T = unknown> = ApiResponse<{
+  items: T[];
+  meta: PaginationMeta;
+}>;
+
+// 响应构建器
+export class ResponseBuilder {
+  // 成功响应
+  static success<T>(data?: T, message?: string): ApiResponse<T> {
+    return {
+      ok: true,
+      code: 200,
+      message: message || 'Success',
+      data,
+      timestamp: Date.now(),
+    };
+  }
+
+  // 错误响应
+  static error(message: string, code: number = 500): ApiResponse<never> {
+    return {
+      ok: false,
+      code,
+      message,
+      timestamp: Date.now(),
+    };
+  }
+
+  // 分页响应
+  static paginated<T>(
+    items: T[],
+    total: number,
+    pageNo: number,
+    pageSize: number,
+    message?: string
+  ): PaginatedApiResponse<T> {
+    return {
+      ok: true,
+      code: 200,
+      message: message || 'Success',
+      data: {
+        items,
+        meta: {
+          total,
+          pageNo,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      },
+      timestamp: Date.now(),
+    };
+  }
+}
+
+// Schema 工厂函数
 export const createApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) => {
-  return z.object({
-    ok: z.boolean(),
-    code: z.number(),
-    message: z.string().optional(),
+  return ApiResponseSchema.extend({
     data: dataSchema.optional(),
-    timestamp: z.number().optional(),
   });
 };
 
-// 成功响应辅助函数
-export const createSuccessResponse = <T>(data?: T): ApiResponse<T> => ({
-  ok: true,
-  code: 200,
-  message: 'Success',
-  data,
-  timestamp: Date.now(),
-});
+export const createPaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) => {
+  return ApiResponseSchema.extend({
+    data: z.object({
+      items: z.array(itemSchema),
+      meta: PaginationMetaSchema,
+    }).optional(),
+  });
+};
 
-// 错误响应辅助函数
-export const createErrorResponse = (message: string, code: number = 500): ApiResponse<never> => ({
-  ok: false,
-  code,
-  message,
-  timestamp: Date.now(),
-});
+// 向后兼容的工厂函数和类型别名
+export const createPaginateResultSchema = createPaginatedResponseSchema;
+export type PaginateMeta = PaginationMeta;
 
-// 分页响应辅助函数
-export const createPaginateResponse = <T>(
-  items: T[],
-  total: number,
-  pageNo: number,
-  pageSize: number,
-): ApiResponse<{ items: T[]; meta: PaginateMeta }> => ({
-  ok: true,
-  code: 200,
-  message: 'Success',
-  data: {
-    items,
-    meta: {
-      total,
-      pageNo,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    },
-  },
-  timestamp: Date.now(),
-});
+// 辅助函数（向后兼容）
+export const createSuccessResponse = ResponseBuilder.success;
+export const createErrorResponse = ResponseBuilder.error;
+export const createPaginateResponse = ResponseBuilder.paginated;

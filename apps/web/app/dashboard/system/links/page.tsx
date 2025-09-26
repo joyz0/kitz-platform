@@ -4,82 +4,57 @@ import * as request from '@/lib/request';
 import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Dropdown } from 'antd';
+import { Button, Dropdown, Tag } from 'antd';
 import { useRef } from 'react';
-import { UserRoleEnum } from '@repo/types';
 import { ProTableUtils } from '@repo/utils/client';
 
-type UserItem = {
+type LinkItem = {
   id: string;
-  name: string | null;
-  email: string;
-  role: string;
-  emailVerified: string | null;
-  image: string | null;
+  title: string;
+  url: string;
+  description: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
-const columns: ProColumns<UserItem>[] = [
+const columns: ProColumns<LinkItem>[] = [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
     width: 48,
   },
   {
-    title: '用户名',
-    dataIndex: 'name',
+    title: '标题',
+    dataIndex: 'title',
     copyable: true,
     ellipsis: true,
+    tooltip: '标题过长会自动收缩',
     hideInForm: true,
   },
   {
-    title: '邮箱',
-    dataIndex: 'email',
+    title: 'URL',
+    dataIndex: 'url',
     copyable: true,
     ellipsis: true,
-    hideInForm: true,
-  },
-  {
-    title: '角色',
-    dataIndex: 'role',
-    filters: true,
-    onFilter: true,
-    ellipsis: true,
-    valueType: 'select',
-    valueEnum: UserRoleEnum.options.reduce(
-      (result: any, item: string) => {
-        result[item] = {
-          text: item,
-        };
-        return result;
-      },
-      {},
+    render: (text: any) => (
+      <a href={text} target="_blank" rel="noopener noreferrer">
+        {text}
+      </a>
     ),
-    formItemProps: {
-      rules: [
-        {
-          required: true,
-          message: '此项为必填项',
-        },
-      ],
+    hideInForm: true,
+  },
+  {
+    title: '描述',
+    dataIndex: 'description',
+    ellipsis: true,
+    hideInSearch: true,
+    hideInForm: true,
+    render: (text: any) => {
+      if (!text) {
+        return <Tag color="gray">无描述</Tag>;
+      }
+      return text;
     },
-  },
-  {
-    title: '头像',
-    dataIndex: 'image',
-    valueType: 'image',
-    hideInSearch: true,
-    hideInForm: true,
-    width: 80,
-  },
-  {
-    title: '邮箱验证时间',
-    dataIndex: 'emailVerified',
-    valueType: 'date',
-    sorter: true,
-    hideInSearch: true,
-    hideInForm: true,
   },
   {
     title: '创建时间',
@@ -108,7 +83,7 @@ const columns: ProColumns<UserItem>[] = [
     title: '操作',
     valueType: 'option',
     key: 'option',
-    render: (_, record: UserItem, __, action) => [
+    render: (_, record: LinkItem, __, action) => [
       <a
         key="editable"
         onClick={() => {
@@ -117,14 +92,14 @@ const columns: ProColumns<UserItem>[] = [
       >
         编辑
       </a>,
-      <a key="view" onClick={() => console.log('查看', record.email)}>
-        查看
+      <a key="view" onClick={() => window.open(record.url, '_blank')}>
+        访问
       </a>,
       <TableDropdown
         key="actionGroup"
         onSelect={() => action?.reload()}
         menus={[
-          { key: 'copy', name: '复制' },
+          { key: 'copy', name: '复制链接' },
           { key: 'delete', name: '删除' },
         ]}
       />,
@@ -135,7 +110,7 @@ const columns: ProColumns<UserItem>[] = [
 export default () => {
   const actionRef = useRef<ActionType>(null);
   return (
-    <ProTable<UserItem>
+    <ProTable<LinkItem>
       rowKey="id"
       columns={columns}
       actionRef={actionRef}
@@ -143,7 +118,7 @@ export default () => {
       request={ProTableUtils.createRequestFunction(
         (params) => {
           return request.get<any>(
-            `${process.env.NEXT_PUBLIC_API_URL}/users`,
+            `${process.env.NEXT_PUBLIC_API_URL}/links`,
             params,
           );
         },
@@ -157,7 +132,7 @@ export default () => {
         type: 'multiple',
       }}
       columnsState={{
-        persistenceKey: 'pro-table-user-demos',
+        persistenceKey: 'pro-table-links-demos',
         persistenceType: 'localStorage',
         defaultValue: {
           option: { fixed: 'right', disable: true },
@@ -192,7 +167,7 @@ export default () => {
         onChange: (page, pageSize) => console.log('分页变化:', page, pageSize),
       }}
       dateFormatter="string"
-      headerTitle="用户管理"
+      headerTitle="链接管理"
       toolBarRender={() => [
         <Button
           key="button"

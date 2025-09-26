@@ -1,13 +1,28 @@
 import { z } from 'zod';
-import { InviteCodeSchema } from './invite-code.schema';
-import { createPaginatedDataSchema } from '../../common/pagination.schema';
+import { inviteCodeSchema } from './invite-code.schema';
+import { createPaginatedResponseSchema } from '../../common/response.dto';
 
-// 邀请码响应 DTO
-export const InviteCodeResponseSchema = InviteCodeSchema;
+// 用户信息 Schema
+const userInfoSchema = z
+  .object({
+    id: z.string(),
+    name: z.string().nullable(),
+    email: z.string(),
+  })
+  .nullable();
 
-export type InviteCodeResponseDto = z.infer<typeof InviteCodeResponseSchema>;
+// 邀请码响应 Schema，基于基础Schema扩展用户信息
+export const inviteCodeResponseSchema = inviteCodeSchema.extend({
+  user: userInfoSchema,
+});
 
-// 邀请码列表响应 DTO（带分页）
-export const InviteCodeListResponseSchema = createPaginatedDataSchema(InviteCodeResponseSchema);
+export type InviteCodeResponseDto = z.infer<typeof inviteCodeResponseSchema>;
 
-export type InviteCodeListResponseDto = z.infer<typeof InviteCodeListResponseSchema>;
+// 邀请码列表响应 Schema（带分页）
+export const inviteCodeListResponseSchema = createPaginatedResponseSchema(
+  inviteCodeResponseSchema,
+);
+
+export type InviteCodeListResponseDto = z.infer<
+  typeof inviteCodeListResponseSchema
+>;

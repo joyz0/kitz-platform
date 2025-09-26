@@ -15,6 +15,7 @@ import { RoutePath } from '@/lib/constants';
 import { signUp } from '@/actions/login';
 import { useActionState, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
+import { KitResponse } from '@repo/types';
 import { encryptFrontPassword } from '../utils';
 
 export default function SignUpPage() {

@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from '@/lib/auth';
 import { RoutePath } from '@/lib/constants';
-import { signInSchema, signUpSchema } from '@/lib/zod';
+import { loginDto, registerDto, KitResponse } from '@repo/types';
 import { userRepo, inviteCodeRepo } from '@repo/database';
 import { saltAndHashPassword } from '@/lib/utils';
 import { redirect } from 'next/navigation';
@@ -17,7 +17,7 @@ export async function logout() {
 export async function login(prevState: KitResponse, req: FormData) {
   const json = Object.fromEntries(req.entries());
   delete json.redirectTo;
-  const query = signInSchema.safeParse(json);
+  const query = loginDto.safeParse(json);
 
   if (!query.success) {
     return {
@@ -72,7 +72,7 @@ export async function loginByProvider(prevState: KitResponse, req: FormData) {
 }
 
 export async function signUp(prevState: KitResponse, req: FormData) {
-  const query = signUpSchema.safeParse(Object.fromEntries(req.entries()));
+  const query = registerDto.safeParse(Object.fromEntries(req.entries()));
 
   if (!query.success) {
     return {

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // 完整的链接 schema
-export const LinkSchema = z.object({
+export const linkSchema = z.object({
   id: z.number(),
   url: z.string().url(),
   title: z.string(),
@@ -10,4 +10,4 @@ export const LinkSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 
-export type Link = z.infer<typeof LinkSchema>;
+export type Link = z.infer<typeof linkSchema>;

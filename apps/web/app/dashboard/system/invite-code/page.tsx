@@ -1,44 +1,31 @@
 'use client';
 
 import * as request from '@/lib/request';
-import {
-  QuerySchema,
-  InviteCodeSchema,
-  InviteCodeFormSchema,
-  inviteCodeFormSchema,
-} from '@/lib/zod';
 import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Dropdown, Space, Tag } from 'antd';
+import { Button, Dropdown } from 'antd';
 import { useRef } from 'react';
-import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
+import { InviteCodeTypeEnum } from '@repo/types';
+import { ProTableUtils } from '@repo/utils/client';
 
-export const waitTimePromise = async (time: number = 100) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
+type InviteCodeItem = {
+  id: string;
+  code: string;
+  type: string;
+  expiresAt: string | null;
+  usedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userId: string | null;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+  } | null;
 };
 
-type GithubIssueItem = {
-  url: string;
-  id: number;
-  number: number;
-  title: string;
-  labels: {
-    name: string;
-    color: string;
-  }[];
-  state: string;
-  comments: number;
-  created_at: string;
-  updated_at: string;
-  closed_at?: string;
-};
-
-const columns: ProColumns<GithubIssueItem>[] = [
+const columns: ProColumns<InviteCodeItem>[] = [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -59,12 +46,15 @@ const columns: ProColumns<GithubIssueItem>[] = [
     onFilter: true,
     ellipsis: true,
     valueType: 'select',
-    valueEnum: InviteCodeTypeEnum.getOptions().reduce((result, item) => {
-      result[item.value] = {
-        text: item.label,
-      };
-      return result;
-    }, {} as any),
+    valueEnum: InviteCodeTypeEnum.options.reduce(
+      (result: any, item: string) => {
+        result[item] = {
+          text: item,
+        };
+        return result;
+      },
+      {},
+    ),
     formItemProps: {
       rules: [
         {
@@ -119,7 +109,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     ellipsis: true,
     hideInSearch: true,
     hideInForm: true,
-    render: (text: any, record, _, action) => {
+    render: (text: any, record: InviteCodeItem) => {
       if (!text) {
         return null;
       }
@@ -130,7 +120,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     title: '操作',
     valueType: 'option',
     key: 'option',
-    render: (text, record, _, action) => [
+    render: (_, record: InviteCodeItem, __, action) => [
       <a
         key="editable"
         onClick={() => {
@@ -139,7 +129,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
       >
         编辑
       </a>,
-      <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
+      <a key="view" onClick={() => console.log('查看', record.code)}>
         查看
       </a>,
       <TableDropdown
@@ -157,18 +147,24 @@ const columns: ProColumns<GithubIssueItem>[] = [
 export default () => {
   const actionRef = useRef<ActionType>(null);
   return (
-    <ProTable<GithubIssueItem>
+    <ProTable<InviteCodeItem>
       rowKey="code"
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      request={async (params, sort, filter) => {
-        console.log(sort, filter);
-        return request.get<any>(
-          `${process.env.NEXT_PUBLIC_API_URL}/inviteCodes`,
-          params,
-        );
-      }}
+      request={ProTableUtils.createRequestFunction(
+        (params) => {
+          return request.get<any>(
+            `${process.env.NEXT_PUBLIC_API_URL}/inviteCodes`,
+            params,
+          );
+        },
+        {
+          defaultPageSize: 10,
+          defaultSortBy: 'createdAt',
+          defaultSortOrder: 'descend',
+        },
+      )}
       editable={{
         type: 'multiple',
       }}
@@ -203,11 +199,13 @@ export default () => {
         },
       }}
       pagination={{
-        pageSize: 5,
-        onChange: (page) => console.log(page),
+        pageSize: 10,
+        showQuickJumper: true,
+        showSizeChanger: true,
+        onChange: (page, pageSize) => console.log('分页变化:', page, pageSize),
       }}
       dateFormatter="string"
-      headerTitle="高级表格"
+      headerTitle="邀请码管理"
       toolBarRender={() => [
         <Button
           key="button"

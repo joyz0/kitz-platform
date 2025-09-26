@@ -171,6 +171,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       add:
         specifier: ^2.0.6
         version: 2.0.6

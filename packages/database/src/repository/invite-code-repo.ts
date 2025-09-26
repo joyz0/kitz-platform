@@ -10,7 +10,7 @@ export interface InviteCodeRepository {
   count(param: Record<string, any>): Promise<any>;
 }
 
-export const inviteCodeRepository: InviteCodeRepository = {
+export const inviteCodeRepo: InviteCodeRepository = {
   findByCode: (code) =>
     prisma.inviteCode.findUnique({
       where: { code },

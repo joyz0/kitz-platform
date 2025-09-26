@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { InviteCodeTypeEnum } from '../../enums/invite-code-type';
 
 // 完整的邀请码 schema
-export const InviteCodeSchema = z.object({
+export const inviteCodeSchema = z.object({
   id: z.string().cuid(),
   code: z.string(),
   type: InviteCodeTypeEnum,
@@ -13,4 +13,4 @@ export const InviteCodeSchema = z.object({
   userId: z.string().nullable(), // 使用者ID
 });
 
-export type InviteCode = z.infer<typeof InviteCodeSchema>;
+export type InviteCode = z.infer<typeof inviteCodeSchema>;

@@ -1,13 +1,14 @@
 import { z } from 'zod';
-import { LinkSchema } from './link.schema';
-import { createPaginatedDataSchema } from '../../common/pagination.schema';
+import { linkSchema } from './link.schema';
+import { createPaginatedResponseSchema } from '../../common/response.dto';
 
-// 链接响应 DTO
-export const LinkResponseSchema = LinkSchema;
+// 链接响应 Schema
+export const linkResponseSchema = linkSchema;
 
-export type LinkResponseDto = z.infer<typeof LinkResponseSchema>;
+export type LinkResponseDto = z.infer<typeof linkResponseSchema>;
 
-// 链接列表响应 DTO（带分页）
-export const LinkListResponseSchema = createPaginatedDataSchema(LinkResponseSchema);
+// 链接列表响应 Schema（带分页）
+export const linkListResponseSchema =
+  createPaginatedResponseSchema(linkResponseSchema);
 
-export type LinkListResponseDto = z.infer<typeof LinkListResponseSchema>;
+export type LinkListResponseDto = z.infer<typeof linkListResponseSchema>;

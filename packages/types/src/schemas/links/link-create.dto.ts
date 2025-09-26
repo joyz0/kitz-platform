@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { LinkSchema } from './link.schema';
+import { linkSchema } from './link.schema';
 
 // 创建链接 DTO
-export const LinkCreateSchema = LinkSchema.omit({
+export const linkCreateSchema = linkSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export type LinkCreateDto = z.infer<typeof LinkCreateSchema>;
+export type LinkCreateDto = z.infer<typeof linkCreateSchema>;

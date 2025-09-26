@@ -4,7 +4,6 @@ export * from './enums/invite-code-type';
 export * from './enums/status-code';
 
 // 通用类型
-export * from './common/pagination.schema';
 export * from './common/request.dto';
 export * from './common/response.dto';
 

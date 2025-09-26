@@ -25,6 +25,7 @@ import {
 import { login, loginByProvider } from '@/actions/login';
 import { LoadingOutlined } from '@ant-design/icons';
 import { encryptFrontPassword } from '../utils';
+import { KitResponse } from '@repo/types';
 import { Request } from '@/lib/request';
 import dynamic from 'next/dynamic';
 

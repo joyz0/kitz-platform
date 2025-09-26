@@ -4,7 +4,10 @@ import {
   User,
   UserCreateDto,
   UserUpdateDto,
-  UserRole
+  UserQueryDto,
+  UserRole,
+  createPaginateResponse,
+  ApiResponse,
 } from '@repo/types';
 import { BaseService } from '../common/base.service';
 
@@ -33,13 +36,46 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(query: UserQueryDto): Promise<ApiResponse<any>> {
     try {
-      const users = await userRepo.findAll();
-      this.logSuccess('Retrieved users', { count: users.length });
-      return users;
+      // 构建查询条件
+      const where: any = {};
+      if (query.name) where.name = { contains: query.name };
+      if (query.email) where.email = { contains: query.email };
+      if (query.role) where.role = query.role;
+
+      // 时间范围查询
+      if (query.startTime || query.endTime) {
+        where.createdAt = {};
+        if (query.startTime) where.createdAt.gte = query.startTime;
+        if (query.endTime) where.createdAt.lte = query.endTime;
+      }
+
+      // 排序参数转换
+      const orderBy = {
+        [query.sortBy]: query.sortOrder === 'ascend' ? 'asc' : 'desc',
+      };
+
+      const pageNo = query.pageNo;
+      const pageSize = query.pageSize;
+
+      const [data, total] = await Promise.all([
+        userRepo.findMany({
+          where,
+          skip: (pageNo - 1) * pageSize,
+          take: pageSize,
+          orderBy,
+        }),
+        userRepo.count({ where }),
+      ]);
+
+      // 移除密码字段
+      const sanitizedData = data.map(({ password, ...user }) => user);
+
+      this.logSuccess('Users retrieved', { total, pageNo, pageSize });
+      return createPaginateResponse(sanitizedData, total, pageNo, pageSize);
     } catch (error) {
-      this.handleError(error, 'fetch all users');
+      this.handleError(error, 'fetch users');
     }
   }
 
