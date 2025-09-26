@@ -3,8 +3,7 @@
 import { signIn, signOut } from '@/lib/auth';
 import { RoutePath } from '@/lib/constants';
 import { signInSchema, signUpSchema } from '@/lib/zod';
-import { prisma } from '@repo/pgdb';
-import { stripUndefined } from '@/lib/prisma-adapter';
+import { userRepo, inviteCodeRepo } from '@repo/database';
 import { saltAndHashPassword } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
@@ -86,9 +85,7 @@ export async function signUp(prevState: KitResponse, req: FormData) {
   const { email, password, inviteCode } = query.data;
 
   try {
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await userRepo.findByEmail(email);
     if (existingUser) {
       return {
         success: false,
@@ -96,9 +93,7 @@ export async function signUp(prevState: KitResponse, req: FormData) {
         message: '该邮箱已被使用',
       };
     }
-    const existingInviteCode = await prisma.inviteCode.findUnique({
-      where: { code: inviteCode },
-    });
+    const existingInviteCode = await inviteCodeRepo.findByCode(inviteCode);
     if (!existingInviteCode) {
       return {
         success: false,
@@ -120,19 +115,10 @@ export async function signUp(prevState: KitResponse, req: FormData) {
         message: '邀请码已失效',
       };
     }
-    const [user, code] = await prisma.$transaction(async (tx: any) => {
-      const u = await tx.user.create(
-        stripUndefined({ email, password: saltAndHashPassword(password) }),
-      );
-      const c = await tx.inviteCode.update({
-        where: { code: inviteCode },
-        ...stripUndefined({
-          userId: u.id,
-          usedAt: new Date(),
-        }),
-      });
-
-      return [u, c];
+    const [user, code] = await userRepo.signUp({
+      email,
+      password: saltAndHashPassword(password),
+      inviteCode,
     });
   } catch (error) {
     return {

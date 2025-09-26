@@ -1,4 +1,4 @@
-import { type InviteCode } from '@repo/pgdb';
+import { type InviteCode } from '@repo/prisma';
 import { InviteCodeTypeEnum } from '../../enums/invite-code-type';
 
 export class CreateInviteCodeDto implements Partial<InviteCode> {

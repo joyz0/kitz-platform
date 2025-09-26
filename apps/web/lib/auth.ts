@@ -6,10 +6,11 @@ import Credentials from 'next-auth/providers/credentials';
 import { signInSchema } from './zod';
 import { PrismaAdapter } from './prisma-adapter';
 import { ErrorType, RoutePath } from './constants';
-import { prisma } from '@repo/pgdb';
+import { prisma } from '@repo/prisma';
 import { headers, cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 import { Request } from '@/lib/request';
+import './env-init';
 
 export type NextAuthUser = Session['user'];
 
@@ -54,6 +55,7 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
   debug: process.env.NODE_ENV === 'development',
   trustHost: true,
   providers,
+  // 移除手动 env 配置，环境变量现在通过 next.config.mjs 自动注入
   // adapter,
   secret: process.env.AUTH_SECRET,
   session: {

@@ -16,8 +16,7 @@
     "check-updates": "pnpm recursive exec -- pnpm dlx npm-check-updates -u"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/config": "workspace:*",
     "prettier": "^3.2.5",
     "turbo": "^2.5.0"
   },

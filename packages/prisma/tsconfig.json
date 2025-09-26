@@ -1,0 +1,14 @@
+{
+  "extends": "@repo/config/typescript/nestjs.json",
+  "compilerOptions": {
+    "composite": true,
+    "allowJs": true,
+    "baseUrl": "src",
+    "esModuleInterop": true,
+    "incremental": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src", "prisma/_loadEnv.ts"],
+  "exclude": ["node_modules", "dist", "**/*spec.ts", "prisma", "seed.ts"]
+}

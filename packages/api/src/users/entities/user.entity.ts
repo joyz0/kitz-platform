@@ -1,4 +1,4 @@
-import { type User } from '@repo/pgdb';
+import { type User } from '@repo/prisma';
 import { UserRoleEnum } from '../../enums/user-role';
 
 export class UserEntity implements User {

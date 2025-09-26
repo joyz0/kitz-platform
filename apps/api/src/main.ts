@@ -3,8 +3,20 @@ import { VersioningType } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { EnvLoader } from '@repo/env';
+import { resolve } from 'path';
 
 async function bootstrap() {
+  EnvLoader.load({
+    path: resolve(__dirname, '../../../packages/env'),
+    env: process.env.NODE_ENV || 'local',
+    required: [
+      'AUTH_SECRET',
+      'REFRESH_TOKEN_EXPIRES_IN_DAYS',
+      'TOKEN_EXPIRES_IN_HOURS',
+      'REDIS_HOST',
+    ],
+  });
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });

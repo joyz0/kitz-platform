@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { prisma } from '@repo/pgdb';
+import { inviteCodeRepo } from '@repo/database';
 import { InviteCodeEntity } from '@repo/api/invite-codes/entities/invite-code.entity';
 import { BaseService } from '../common/base.service';
 import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
@@ -19,13 +19,13 @@ export class InviteCodesService extends BaseService {
     createInviteCodeDto: CreateInviteCodeDto,
   ): Promise<InviteCodeEntity> {
     try {
-      const inviteCode = await prisma.inviteCode.create({
+      const inviteCode = await inviteCodeRepo.create({
         data: {
           ...createInviteCodeDto,
           code: crypto.randomBytes(16).toString('hex').toUpperCase(),
           type: createInviteCodeDto.type || InviteCodeTypeEnum.REGISTER,
-        },
-      });
+        }
+      }) 
       this.logger.log(`InviteCode created with CODE: ${inviteCode.code}`);
       return inviteCode;
     } catch (error) {
@@ -41,13 +41,13 @@ export class InviteCodesService extends BaseService {
     };
 
     const [data, total] = await Promise.all([
-      prisma.inviteCode.findMany({
+      inviteCodeRepo.findMany({
         where: query.where,
         skip: (query.pageNo - 1) * query.pageSize,
         take: query.pageSize,
         orderBy,
       }),
-      prisma.inviteCode.count({ where: query.where }),
+      inviteCodeRepo.count({ where: query.where }),
     ]);
 
     return Response.paginate<InviteCodeEntity>(
@@ -60,7 +60,7 @@ export class InviteCodesService extends BaseService {
 
   async findAll(): Promise<InviteCodeEntity[]> {
     try {
-      const inviteCodes = await prisma.inviteCode.findMany();
+      const inviteCodes = await inviteCodeRepo.findAll();
       this.logger.log(`Retrieved ${inviteCodes.length} inviteCodes`);
       return inviteCodes;
     } catch (error) {
@@ -70,9 +70,7 @@ export class InviteCodesService extends BaseService {
 
   async findOne(code: string): Promise<InviteCodeEntity | null> {
     try {
-      const inviteCode = await prisma.inviteCode.findUnique({
-        where: { code },
-      });
+      const inviteCode = await inviteCodeRepo.findByCode(code);
       if (!inviteCode) {
         this.logger.warn(`InviteCode not found with CODE: ${code}`);
         return null;
@@ -88,9 +86,9 @@ export class InviteCodesService extends BaseService {
     updateInviteCodeDto: UpdateInviteCodeDto,
   ): Promise<InviteCodeEntity> {
     try {
-      const inviteCode = await prisma.inviteCode.update({
+      const inviteCode = await inviteCodeRepo.update({
         where: { code },
-        data: updateInviteCodeDto,
+        data: updateInviteCodeDto, 
       });
       this.logger.log(`InviteCode updated with CODE: ${code}`);
       return inviteCode;
@@ -101,9 +99,7 @@ export class InviteCodesService extends BaseService {
 
   async remove(code: string): Promise<InviteCodeEntity> {
     try {
-      const inviteCode = await prisma.inviteCode.delete({
-        where: { code },
-      });
+      const inviteCode = await inviteCodeRepo.deleteByCode(code);
       this.logger.log(`InviteCode deleted with CODE: ${code}`);
       return inviteCode;
     } catch (error) {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { prisma } from '@repo/pgdb';
+import { userRepo } from '@repo/database';
 import { UserEntity } from '@repo/api/users/entities/user.entity';
 import { BaseService } from '../common/base.service';
 import { CreateUserDto } from '@repo/api/users/dto/create-user.dto';
@@ -14,7 +14,7 @@ export class UsersService extends BaseService {
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     try {
-      const user = await prisma.user.create({
+      const user = await userRepo.create({
         data: {
           ...createUserDto,
           // 如果需要默认值
@@ -30,7 +30,7 @@ export class UsersService extends BaseService {
 
   async findAll(): Promise<UserEntity[]> {
     try {
-      const users = await prisma.user.findMany();
+      const users = await userRepo.findAll();
       this.logger.log(`Retrieved ${users.length} users`);
       return users;
     } catch (error) {
@@ -40,9 +40,7 @@ export class UsersService extends BaseService {
 
   async findOne(id: string): Promise<UserEntity | null> {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id },
-      });
+      const user = await userRepo.findById(id);
       if (!user) {
         this.logger.warn(`User not found with ID: ${id}`);
         return null;
@@ -55,9 +53,7 @@ export class UsersService extends BaseService {
 
   async findOneByEmail(email: string): Promise<UserEntity | null> {
     try {
-      const user = await prisma.user.findUnique({
-        where: { email },
-      });
+      const user = await userRepo.findByEmail(email);
       if (!user) {
         this.logger.warn(`User not found with Email: ${email}`);
         return null;
@@ -70,7 +66,7 @@ export class UsersService extends BaseService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     try {
-      const user = await prisma.user.update({
+      const user = await userRepo.update({
         where: { id },
         data: updateUserDto,
       });
@@ -83,9 +79,7 @@ export class UsersService extends BaseService {
 
   async remove(id: string): Promise<UserEntity> {
     try {
-      const user = await prisma.user.delete({
-        where: { id },
-      });
+      const user = await userRepo.delete(id);
       this.logger.log(`User deleted with ID: ${id}`);
       return user;
     } catch (error) {

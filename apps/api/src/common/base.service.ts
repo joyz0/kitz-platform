@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@repo/pgdb';
+import { PrismaClientKnownRequestError } from '@repo/prisma';
 import { StatusCode } from '@repo/api/enums/status-code';
 import { CustomException } from '../exceptions/custom.exception';
 

@@ -1,5 +1,12 @@
+import { EnvLoader } from '@repo/env';
+
+// 注入环境变量
+const publicEnvVars = EnvLoader.getNextConfigEnv();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 注入环境变量到运行时
+  env: publicEnvVars,
   experimental: {
     taint: true,
     serverActions: {
