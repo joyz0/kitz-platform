@@ -50,6 +50,9 @@ importers:
       '@repo/env':
         specifier: workspace:^
         version: link:../../packages/env
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
       '@repo/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -153,6 +156,9 @@ importers:
       '@repo/config':
         specifier: workspace:^
         version: link:../../packages/config
+      '@repo/database':
+        specifier: workspace:^
+        version: link:../../packages/database
       '@repo/env':
         specifier: workspace:^
         version: link:../../packages/env

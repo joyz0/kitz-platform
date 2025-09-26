@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { LinksService } from './links.service';
 
-import { CreateLinkDto } from '@repo/api/links/dto/create-link.dto';
-import { UpdateLinkDto } from '@repo/api/links/dto/update-link.dto';
+import { LinkCreateDto } from '@repo/types';
+import { LinkUpdateDto } from '@repo/types';
 
 @Controller({
   path:'links',
@@ -20,7 +20,7 @@ export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
   @Post()
-  create(@Body() createLinkDto: CreateLinkDto) {
+  create(@Body() createLinkDto: LinkCreateDto) {
     return this.linksService.create(createLinkDto);
   }
 
@@ -35,7 +35,7 @@ export class LinksController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLinkDto: UpdateLinkDto) {
+  update(@Param('id') id: string, @Body() updateLinkDto: LinkUpdateDto) {
     return this.linksService.update(+id, updateLinkDto);
   }
 

@@ -9,7 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { Public } from '../decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { UserEntity } from '@repo/api/users/entities/user.entity';
+import { User } from '@repo/types';
 
 @Controller({
   path: 'auth',
@@ -21,7 +21,7 @@ export class AuthController {
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() body: Pick<UserEntity, 'email' | 'password'>) {
+  async login(@Body() body: Pick<User, 'email' | 'password'>) {
     const user = await this.authService.validateUser(body.email, body.password);
     if (!user) {
       throw new UnauthorizedException();

@@ -5,7 +5,7 @@ import {
   HttpException,
   Logger,
 } from '@nestjs/common';
-import { Response } from '@repo/api/common/response.dto';
+import { ApiResponse, createErrorResponse } from '@repo/types/common/response.dto';
 import { Request, Response as ExpressResponse } from 'express';
 
 @Catch()
@@ -22,7 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     this.logger.error(`异常捕获: ${message}`, exception.stack || '无堆栈');
 
-    const errorResponse = Response.error(message, status);
+    const errorResponse = createErrorResponse(message, status);
 
     response.status(status).json(errorResponse);
   }

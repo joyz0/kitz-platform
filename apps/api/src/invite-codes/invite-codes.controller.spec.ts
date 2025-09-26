@@ -3,10 +3,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { InviteCodesController } from './invite-codes.controller';
 import { InviteCodesService } from './invite-codes.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
-import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
-import { PaginateQuery } from '@repo/api/common/request.dto';
-import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
+import { InviteCodeCreateDto, InviteCodeTypeEnum, RequestQuery, InviteCodeUpdateDto } from '@repo/types';
 
 describe('InviteCodesController', () => {
   let controller: InviteCodesController;
@@ -42,7 +39,7 @@ describe('InviteCodesController', () => {
   });
 
   it('create', async () => {
-    const dto: CreateInviteCodeDto = {
+    const dto: InviteCodeCreateDto = {
       expiresAt: new Date(),
       type: InviteCodeTypeEnum.REGISTER,
     };
@@ -55,7 +52,7 @@ describe('InviteCodesController', () => {
   });
 
   it('paginate', async () => {
-    const query: PaginateQuery = { pageNo: 1, pageSize: 10 };
+    const query: RequestQuery = { pageNo: 1, pageSize: 10 };
     const mockResult = {
       ok: true,
       code: 200,
@@ -112,7 +109,7 @@ describe('InviteCodesController', () => {
 
   it('update', async () => {
     const code = 'TEST123';
-    const dto: UpdateInviteCodeDto = { expiresAt: new Date() };
+    const dto: InviteCodeUpdateDto = { expiresAt: new Date() };
     const mockResult = { code, ...dto };
 
     jest.spyOn(inviteCodesService, 'update').mockResolvedValue(mockResult);

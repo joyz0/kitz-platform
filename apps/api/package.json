@@ -23,6 +23,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.20",
+    "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/database": "workspace:^",
     "@repo/env": "workspace:^",

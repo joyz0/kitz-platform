@@ -17,6 +17,7 @@
     "@ant-design/pro-components": "^2.8.7",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@gsap/react": "^2.1.2",
+    "@repo/database": "workspace:^",
     "@repo/prisma": "workspace:^",
     "@repo/config": "workspace:^",
     "@repo/env": "workspace:^",

@@ -1,7 +1,7 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { UserEntity } from '@repo/api/users/entities/user.entity';
+import { User } from '@repo/types';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any): Promise<Partial<UserEntity>> {
+  async validate(payload: any): Promise<Partial<User>> {
     return { id: payload.sub, email: payload.email };
   }
 }

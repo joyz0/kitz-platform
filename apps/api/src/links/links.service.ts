@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { LinkEntity } from '@repo/api/links/entities/link.entity';
-
-import { CreateLinkDto } from '@repo/api/links/dto/create-link.dto';
-import { UpdateLinkDto } from '@repo/api/links/dto/update-link.dto';
+import { Link, LinkCreateDto, LinkUpdateDto } from '@repo/types';
 
 @Injectable()
 export class LinksService {
-  private readonly _links: LinkEntity[] = [
+  private readonly _links: Link[] = [
     {
       id: 0,
       title: 'Docs',
@@ -37,7 +34,7 @@ export class LinksService {
     },
   ];
 
-  create(createLinkDto: CreateLinkDto) {
+  create(createLinkDto: LinkCreateDto) {
     return `This action adds a new link ${createLinkDto}`;
   }
 
@@ -49,7 +46,7 @@ export class LinksService {
     return `This action returns a #${id} link`;
   }
 
-  update(id: number, updateLinkDto: UpdateLinkDto) {
+  update(id: number, updateLinkDto: LinkUpdateDto) {
     return `This action updates a #${id} link ${updateLinkDto}`;
   }
 

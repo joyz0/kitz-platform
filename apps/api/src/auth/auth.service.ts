@@ -3,9 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { BaseService } from '../common/base.service';
 import { UsersService } from '../users/users.service';
-import { UserEntity } from '@repo/api/users/entities/user.entity';
 import { RedisService } from '../redis/redis.service';
 import { ConfigService } from '@nestjs/config';
+import type { User } from '@repo/types';
 
 @Injectable()
 export class AuthService extends BaseService {
@@ -23,7 +23,7 @@ export class AuthService extends BaseService {
     );
   }
 
-  async validateUser(email: string, pwd: string): Promise<Partial<UserEntity>> {
+  async validateUser(email: string, pwd: string): Promise<Partial<User>> {
     try {
       const user = await this.usersService.findOneByEmail(email);
       if (user && (await bcrypt.compare(pwd, user.password))) {
