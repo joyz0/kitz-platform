@@ -7,12 +7,18 @@ import {
   Param,
   Delete,
   UseGuards,
-  Version
+  Version,
+  UsePipes
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from '@repo/api/users/dto/create-user.dto';
-import { UpdateUserDto } from '@repo/api/users/dto/update-user.dto';
+import {
+  UserCreateDto,
+  UserUpdateDto,
+  UserCreateSchema,
+  UserUpdateSchema
+} from '@repo/types';
 import { AuthGuard } from '@nestjs/passport';
+import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 
 @Controller({
   path:'users',
@@ -23,7 +29,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @UsePipes(new ZodValidationPipe(UserCreateSchema))
+  create(@Body() createUserDto: UserCreateDto) {
     return this.usersService.create(createUserDto);
   }
 
@@ -38,7 +45,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UsePipes(new ZodValidationPipe(UserUpdateSchema))
+  update(@Param('id') id: string, @Body() updateUserDto: UserUpdateDto) {
     return this.usersService.update(id, updateUserDto);
   }
 

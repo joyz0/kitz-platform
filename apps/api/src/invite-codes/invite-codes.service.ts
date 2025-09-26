@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { inviteCodeRepo } from '@repo/database';
-import { InviteCodeEntity } from '@repo/api/invite-codes/entities/invite-code.entity';
+import {
+  InviteCode,
+  InviteCodeCreateDto,
+  InviteCodeUpdateDto,
+  InviteCodeQueryDto,
+  InviteCodeType,
+  createPaginateResponse,
+  ApiResponse
+} from '@repo/types';
 import { BaseService } from '../common/base.service';
-import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
-import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
-import { InviteCodeTypeEnum } from '@repo/api/enums/invite-code-type';
-import { PaginateQuery } from '@repo/api/common/request.dto';
-import { PaginateResult, Response } from '@repo/api/common/response.dto';
 import crypto from 'crypto';
 
 @Injectable()
@@ -16,16 +19,16 @@ export class InviteCodesService extends BaseService {
   }
 
   async create(
-    createInviteCodeDto: CreateInviteCodeDto,
-  ): Promise<InviteCodeEntity> {
+    createInviteCodeDto: InviteCodeCreateDto,
+  ): Promise<InviteCode> {
     try {
       const inviteCode = await inviteCodeRepo.create({
         data: {
           ...createInviteCodeDto,
-          code: crypto.randomBytes(16).toString('hex').toUpperCase(),
-          type: createInviteCodeDto.type || InviteCodeTypeEnum.REGISTER,
+          code: createInviteCodeDto.code || crypto.randomBytes(16).toString('hex').toUpperCase(),
+          type: createInviteCodeDto.type || 'REGISTER' as InviteCodeType,
         }
-      }) 
+      })
       this.logger.log(`InviteCode created with CODE: ${inviteCode.code}`);
       return inviteCode;
     } catch (error) {
@@ -34,31 +37,29 @@ export class InviteCodesService extends BaseService {
   }
 
   async paginate(
-    query: PaginateQuery<InviteCodeEntity>,
-  ): Promise<Response<PaginateResult<InviteCodeEntity>>> {
+    query: InviteCodeQueryDto,
+  ): Promise<ApiResponse<any>> {
     const orderBy = {
-      [query.sortBy]: query.sortOrder.toLowerCase(),
+      [query.sortBy || 'createdAt']: (query.sortOrder || 'DESC').toLowerCase(),
     };
+
+    const pageNo = query.pageNo || 1;
+    const pageSize = query.pageSize || 10;
 
     const [data, total] = await Promise.all([
       inviteCodeRepo.findMany({
-        where: query.where,
-        skip: (query.pageNo - 1) * query.pageSize,
-        take: query.pageSize,
+        where: query.where || {},
+        skip: (pageNo - 1) * pageSize,
+        take: pageSize,
         orderBy,
       }),
-      inviteCodeRepo.count({ where: query.where }),
+      inviteCodeRepo.count({ where: query.where || {} }),
     ]);
 
-    return Response.paginate<InviteCodeEntity>(
-      data,
-      total,
-      query.pageNo,
-      query.pageSize,
-    );
+    return createPaginateResponse(data, total, pageNo, pageSize);
   }
 
-  async findAll(): Promise<InviteCodeEntity[]> {
+  async findAll(): Promise<InviteCode[]> {
     try {
       const inviteCodes = await inviteCodeRepo.findAll();
       this.logger.log(`Retrieved ${inviteCodes.length} inviteCodes`);
@@ -68,7 +69,7 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-  async findOne(code: string): Promise<InviteCodeEntity | null> {
+  async findOne(code: string): Promise<InviteCode | null> {
     try {
       const inviteCode = await inviteCodeRepo.findByCode(code);
       if (!inviteCode) {
@@ -83,12 +84,12 @@ export class InviteCodesService extends BaseService {
 
   async update(
     code: string,
-    updateInviteCodeDto: UpdateInviteCodeDto,
-  ): Promise<InviteCodeEntity> {
+    updateInviteCodeDto: InviteCodeUpdateDto,
+  ): Promise<InviteCode> {
     try {
       const inviteCode = await inviteCodeRepo.update({
         where: { code },
-        data: updateInviteCodeDto, 
+        data: updateInviteCodeDto,
       });
       this.logger.log(`InviteCode updated with CODE: ${code}`);
       return inviteCode;
@@ -97,7 +98,7 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-  async remove(code: string): Promise<InviteCodeEntity> {
+  async remove(code: string): Promise<InviteCode> {
     try {
       const inviteCode = await inviteCodeRepo.deleteByCode(code);
       this.logger.log(`InviteCode deleted with CODE: ${code}`);

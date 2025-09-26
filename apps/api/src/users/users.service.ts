@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { userRepo } from '@repo/database';
-import { UserEntity } from '@repo/api/users/entities/user.entity';
+import {
+  User,
+  UserCreateDto,
+  UserUpdateDto,
+  UserRole
+} from '@repo/types';
 import { BaseService } from '../common/base.service';
-import { CreateUserDto } from '@repo/api/users/dto/create-user.dto';
-import { UpdateUserDto } from '@repo/api/users/dto/update-user.dto';
-import { UserRoleEnum } from '@repo/api/enums/user-role';
 
 @Injectable()
 export class UsersService extends BaseService {
@@ -12,13 +14,13 @@ export class UsersService extends BaseService {
     super(UsersService.name);
   }
 
-  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
+  async create(createUserDto: UserCreateDto): Promise<User> {
     try {
       const user = await userRepo.create({
         data: {
           ...createUserDto,
           // 如果需要默认值
-          role: createUserDto.role || UserRoleEnum.USER,
+          role: createUserDto.role || 'USER' as UserRole,
         },
       });
       this.logger.log(`User created with ID: ${user.id}`);
@@ -28,7 +30,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findAll(): Promise<UserEntity[]> {
+  async findAll(): Promise<User[]> {
     try {
       const users = await userRepo.findAll();
       this.logger.log(`Retrieved ${users.length} users`);
@@ -38,7 +40,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findOne(id: string): Promise<UserEntity | null> {
+  async findOne(id: string): Promise<User | null> {
     try {
       const user = await userRepo.findById(id);
       if (!user) {
@@ -51,7 +53,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findOneByEmail(email: string): Promise<UserEntity | null> {
+  async findOneByEmail(email: string): Promise<User | null> {
     try {
       const user = await userRepo.findByEmail(email);
       if (!user) {
@@ -64,7 +66,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+  async update(id: string, updateUserDto: UserUpdateDto): Promise<User> {
     try {
       const user = await userRepo.update({
         where: { id },
@@ -77,7 +79,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async remove(id: string): Promise<UserEntity> {
+  async remove(id: string): Promise<User> {
     try {
       const user = await userRepo.delete(id);
       this.logger.log(`User deleted with ID: ${id}`);

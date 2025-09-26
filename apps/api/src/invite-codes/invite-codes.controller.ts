@@ -8,13 +8,20 @@ import {
   Delete,
   Query,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { InviteCodesService } from './invite-codes.service';
-import { CreateInviteCodeDto } from '@repo/api/invite-codes/dto/create-invite-code.dto';
-import { UpdateInviteCodeDto } from '@repo/api/invite-codes/dto/update-invite-code.dto';
-import { PaginateQuery } from '@repo/api/common/request.dto';
+import {
+  InviteCodeCreateDto,
+  InviteCodeUpdateDto,
+  InviteCodeQueryDto,
+  InviteCodeCreateSchema,
+  InviteCodeUpdateSchema,
+  InviteCodeQuerySchema,
+  InviteCode
+} from '@repo/types';
 import { AuthGuard } from '@nestjs/passport';
-import { InviteCodeEntity } from '@repo/api/invite-codes/entities/invite-code.entity';
+import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 
 @Controller({
   path: 'inviteCodes',
@@ -25,12 +32,13 @@ export class InviteCodesController {
   constructor(private readonly inviteCodesService: InviteCodesService) {}
 
   @Post()
-  create(@Body() createInviteCodeDto: CreateInviteCodeDto) {
+  @UsePipes(new ZodValidationPipe(InviteCodeCreateSchema))
+  create(@Body() createInviteCodeDto: InviteCodeCreateDto) {
     return this.inviteCodesService.create(createInviteCodeDto);
   }
 
   @Get('paginate')
-  paginate(@Query() query: PaginateQuery<InviteCodeEntity>) {
+  paginate(@Query(new ZodValidationPipe(InviteCodeQuerySchema)) query: InviteCodeQueryDto) {
     return this.inviteCodesService.paginate(query);
   }
 
@@ -45,9 +53,10 @@ export class InviteCodesController {
   }
 
   @Patch(':code')
+  @UsePipes(new ZodValidationPipe(InviteCodeUpdateSchema))
   update(
     @Param('code') code: string,
-    @Body() updateInviteCodeDto: UpdateInviteCodeDto,
+    @Body() updateInviteCodeDto: InviteCodeUpdateDto,
   ) {
     return this.inviteCodesService.update(code, updateInviteCodeDto);
   }
