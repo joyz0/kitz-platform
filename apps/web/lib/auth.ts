@@ -4,6 +4,7 @@ import type { Provider } from 'next-auth/providers';
 import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import { loginDto } from '@repo/types';
+import { getJWTExpiration } from '@repo/utils/shared';
 import { PrismaAdapter } from './prisma-adapter';
 import { ErrorType, RoutePath } from './constants';
 import { prisma } from '@repo/prisma';
@@ -54,14 +55,9 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
   debug: process.env.NODE_ENV === 'development',
   trustHost: true,
   providers,
-  // 移除手动 env 配置，环境变量现在通过 next.config.mjs 自动注入
-  // adapter,
   secret: process.env.AUTH_SECRET,
-  session: {
-    strategy: 'jwt',
-    maxAge: expiresIn,
-    updateAge: expiresIn * 0.9,
-  },
+  // 移除 session 配置，使用 NextAuth 默认值 (30天过期, 1天更新)
+  // 这样可以让后端 JWT 完全控制过期逻辑
   pages: {
     signIn: RoutePath.SIGNIN_URL,
     error: RoutePath.ERROR_URL,
@@ -109,25 +105,59 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       return true;
     },
     async jwt(data) {
-      // https://jwt.io/ 解码jwt
-      // user是Credentials.authorize的返回值
       const { token, user, account } = data;
+
+      // 首次登录时设置 token 信息
       if (user) {
         token.id = user.id!;
         token.role = user.role;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
+
+        // 使用工具函数解码后端 JWT 获取真实的过期时间
+        const exp = getJWTExpiration(user.accessToken!);
+        if (exp) {
+          token.exp = exp;
+          console.log('JWT decoded exp:', exp, 'Current time:', Math.floor(Date.now() / 1000));
+        } else {
+          console.warn('Failed to decode JWT, using default expiration');
+          token.exp = Math.floor(Date.now() / 1000) + expiresIn;
+        }
+
+        // 重置刷新相关状态
+        token.lastRefreshAttempt = 0;
+        token.refreshFailureCount = 0;
       } else if (account) {
         token.accessToken = account.access_token;
+        if (!token.exp) {
+          token.exp = Math.floor(Date.now() / 1000) + expiresIn;
+        }
       }
-      console.log('token.exp', token.exp);
-      if (
+
+      const currentTime = Math.floor(Date.now() / 1000);
+      console.log('token.exp', token.exp, 'Current time:', currentTime);
+
+      // 刷新冷却机制：避免频繁刷新
+      const lastRefreshAttempt = (token.lastRefreshAttempt as number) || 0;
+      const timeSinceLastRefresh = currentTime - lastRefreshAttempt;
+      const refreshCooldown = 60; // 60秒冷却期
+
+      // 检查是否需要刷新 token
+      const shouldRefresh =
         token.exp &&
         token.exp > 0 &&
-        Date.now() / 1000 > token.exp - 30 &&
-        token.refreshToken
-      ) {
-        // token续期
+        token.accessToken &&
+        token.refreshToken &&
+        typeof token.accessToken === 'string' &&
+        currentTime > token.exp - 30 && // 提前30秒刷新
+        timeSinceLastRefresh > refreshCooldown; // 冷却期检查
+
+      if (shouldRefresh) {
+        console.log('Token expiring soon, refreshing...');
+
+        // 记录刷新尝试时间
+        token.lastRefreshAttempt = currentTime;
+
         try {
           const res = await Request.post(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-token`,
@@ -140,19 +170,53 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
               },
             },
           );
+
+          // 使用工具函数解码新的 JWT 获取新的过期时间
+          const newExp = getJWTExpiration(res.data.accessToken);
+          const finalExp = newExp || Math.floor(Date.now() / 1000) + expiresIn;
+
+          console.log('Token refreshed successfully, new exp:', finalExp);
+
+          // 刷新成功，重置失败计数
           return {
             ...token,
             accessToken: res.data.accessToken,
             refreshToken: res.data.refreshToken,
-            exp: Date.now() / 1000 + expiresIn,
+            exp: finalExp,
+            lastRefreshAttempt: currentTime,
+            refreshFailureCount: 0,
           };
         } catch (error) {
-          return { ...token, error: ErrorType.ACCESS_DENIED };
+          console.error('Token refresh failed:', error);
+
+          // 增加失败计数
+          const failureCount = ((token.refreshFailureCount as number) || 0) + 1;
+
+          // 如果连续失败次数过多，标记为访问被拒绝
+          if (failureCount >= 3) {
+            console.error('Too many refresh failures, marking as access denied');
+            return {
+              ...token,
+              error: ErrorType.ACCESS_DENIED,
+              refreshFailureCount: failureCount,
+            };
+          }
+
+          // 否则保持原状态，但记录失败次数
+          return {
+            ...token,
+            refreshFailureCount: failureCount,
+            lastRefreshAttempt: currentTime,
+          };
         }
       }
-      console.log('jwt token', token);
-      console.log('jwt user', user);
-      console.log('jwt account', account);
+
+      // 如果 token 已经过期且刷新失败多次，标记错误
+      if (token.exp && currentTime > token.exp && ((token.refreshFailureCount as number) || 0) >= 3) {
+        console.error('Token expired and refresh failed multiple times');
+        return { ...token, error: ErrorType.ACCESS_DENIED };
+      }
+
       return token;
     },
     // 该方法返回的键值对会被存到cookies中
@@ -165,8 +229,6 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
         session.refreshToken = token.refreshToken as string;
         session.error = token.error as string;
       }
-      console.log('session session', session);
-      console.log('session token', token);
       return session;
     },
   },

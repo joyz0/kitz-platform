@@ -19,7 +19,46 @@ async function ResponseInterceptor(response: Response) {
 }
 
 export class Request {
-  static token?: string | null;
+  static token: string | null = null;
+
+  private static buildHeaders(
+    url: string,
+    options?: RequestInit,
+    defaultHeaders: Record<string, string> = {},
+  ): Headers {
+    const headers = new Headers();
+
+    // 设置默认 headers
+    Object.entries(defaultHeaders).forEach(([key, value]) => {
+      headers.set(key, value);
+    });
+
+    const isPublic = whiteList.some((path) => url.indexOf(path) > -1);
+
+    // 检查是否已有手动传入的 Authorization
+    let hasAuthHeader = false;
+    if (options?.headers) {
+      const incomingHeaders = new Headers(options.headers);
+      hasAuthHeader =
+        incomingHeaders.has('Authorization') ||
+        incomingHeaders.has('authorization');
+    }
+
+    // 如果不是公开接口且没有手动传入 Authorization，使用 Request.token
+    if (!isPublic && !hasAuthHeader && Request.token) {
+      headers.set('Authorization', `Bearer ${Request.token}`);
+    }
+
+    // 然后添加传入的 headers，会覆盖同名的默认值
+    if (options?.headers) {
+      const incomingHeaders = new Headers(options.headers);
+      incomingHeaders.forEach((value, key) => {
+        headers.set(key, value);
+      });
+    }
+
+    return headers;
+  }
 
   static async get<
     Q extends QueryParams = QueryParams,
@@ -29,12 +68,7 @@ export class Request {
     const urlObj = new URL(url, undefined);
     const params = queryData || {};
 
-    const defaultHeaders: HeadersInit = {};
-    const isPublic = whiteList.some((path) => url.indexOf(path) > -1);
-    if (!isPublic && Request.token) {
-      defaultHeaders['Authorization'] = `Bearer ${Request.token}`;
-    }
-    const headers = new Headers(defaultHeaders);
+    const headers = Request.buildHeaders(url, options);
 
     Object.entries(params).forEach(([key, val]) => {
       if (Array.isArray(val)) {
@@ -62,22 +96,9 @@ export class Request {
     body?: B,
     options?: O,
   ): Promise<R> {
-    const defaultHeaders: HeadersInit = {
+    const headers = Request.buildHeaders(url, options, {
       'Content-Type': 'application/json',
-    };
-    const isPublic = whiteList.some((path) => url.indexOf(path) > -1);
-    if (!isPublic && Request.token) {
-      defaultHeaders['Authorization'] = `Bearer ${Request.token}`;
-    }
-
-    // Create a headers object combining defaults and options
-    const headers = new Headers(defaultHeaders);
-    if (options?.headers) {
-      const incomingHeaders = new Headers(options.headers);
-      incomingHeaders.forEach((value, key) => {
-        headers.set(key, value);
-      });
-    }
+    });
 
     // Remove Content-Type if body is FormData
     if (body instanceof FormData) {
