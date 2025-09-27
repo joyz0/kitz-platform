@@ -159,7 +159,7 @@ export default function ClientLayout({
         </Content>
         <Footer style={{ textAlign: 'center' }}>
           Kitz Platform ©{new Date().getFullYear()} Created by joyz0
-          <ChatBot />
+          {/* <ChatBot /> */}
         </Footer>
       </Layout>
     </Layout>

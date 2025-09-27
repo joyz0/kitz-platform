@@ -1,22 +1,11 @@
+import './_loadEnv';
 import { NestFactory } from '@nestjs/core';
 import { VersioningType } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
-import { EnvLoader } from '@repo/env';
-import { resolve } from 'path';
 
 async function bootstrap() {
-  EnvLoader.load({
-    path: resolve(__dirname, '../../../packages/env'),
-    env: process.env.NODE_ENV || 'local',
-    required: [
-      'AUTH_SECRET',
-      'REFRESH_TOKEN_EXPIRES_IN_DAYS',
-      'TOKEN_EXPIRES_IN_HOURS',
-      'REDIS_HOST',
-    ],
-  });
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
@@ -35,5 +24,19 @@ async function bootstrap() {
     maxAge: 86400, // 预检请求缓存时间（秒）
   });
   await app.listen(8080);
+
+  if (process.env.NODE_ENV !== 'production') {
+    const url = 'http://localhost:8080/api';
+    console.log(`🚀 Server running on ${url}`);
+    try {
+      const open = (await import('open')).default;
+      await open(url);
+      console.log(`📱 Opened browser to ${url}`);
+    } catch (error) {
+      console.log(
+        `❌ Failed to open browser: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
 }
 bootstrap();

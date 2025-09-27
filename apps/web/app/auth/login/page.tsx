@@ -25,7 +25,7 @@ import {
 import { login, loginByProvider } from '@/actions/login';
 import { LoadingOutlined } from '@ant-design/icons';
 import { encryptFrontPassword } from '../utils';
-import { KitResponse } from '@repo/types';
+import { ApiResponse } from '@repo/types';
 import { Request } from '@/lib/request';
 import dynamic from 'next/dynamic';
 
@@ -67,16 +67,25 @@ function Login() {
   const searchParams = useSearchParams();
 
   const [formResult, formAction, isPending] = useActionState<
-    KitResponse,
+    ApiResponse,
     FormData
-  >(async (prevState: KitResponse, req: FormData) => {
-    const pwd = req.get('password') as string;
-    const encryptedPwd = await encryptFrontPassword(pwd, true);
-    req.set('password', encryptedPwd);
-    return login(prevState, req);
-  }, {});
+  >(
+    async (prevState: ApiResponse, req: FormData) => {
+      const pwd = req.get('password') as string;
+      const encryptedPwd = await encryptFrontPassword(pwd, true);
+      req.set('password', encryptedPwd);
+      return login(prevState, req);
+    },
+    {
+      ok: false,
+      code: 0,
+    },
+  );
   const [providerFormResult, providerFormAction, isProviderPending] =
-    useActionState<KitResponse, FormData>(loginByProvider, {});
+    useActionState<ApiResponse, FormData>(loginByProvider, {
+      ok: false,
+      code: 0,
+    });
 
   // const [config, setConfig] = useState<any>();
   // const initChatUI = async () => {
@@ -176,9 +185,9 @@ function Login() {
           </div>
         </CardContent>
       </Card>
-      <Suspense>
+      {/* <Suspense>
         <ChatUIWrapper />
-      </Suspense>
+      </Suspense> */}
     </div>
   );
 }

@@ -26,7 +26,7 @@ describe('InviteCodesService', () => {
   // }, 100000);
 
   it('inviteCode findAll', async () => {
-    const inviteCodes = await service.findAll();
-    expect(inviteCodes.length).toBe(1);
+    const inviteCodes = await service.findAll({});
+    expect(inviteCodes.data.meta.total).toBe(1);
   }, 100000);
 });

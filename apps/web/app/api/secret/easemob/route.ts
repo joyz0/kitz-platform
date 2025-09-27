@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth';
+import { ResponseBuilder } from '@repo/types';
 
 // export const GET = auth((req: any) => {
 //   if (req.auth) {
@@ -15,13 +16,12 @@ import { auth } from '@/lib/auth';
 // }) as any;  // TODO: Fix `auth()` return type
 
 export const GET = (req: any) => {
-  return Response.json({
-    ok: true,
-    data: {
-      appKey: '1115240819153716#jmwy-manage',
-      accessToken:
-        'YWMtROYAqkXjEfCKaKHaOTd-Lozq_l6IaEOvhVNxqaIbB73NMbDQloQR74gCz7msKLlOAwMAAAGXWVLGXjeeSADF4ehT8ivmzOFyErww-i9tWUL-wbmhLUyyqPrpqVg8oQ',
-      username: 'dev-jmwy1888888888888888888',
-    },
-  });
+  const data = {
+    appKey: '1115240819153716#jmwy-manage',
+    accessToken:
+      'YWMtROYAqkXjEfCKaKHaOTd-Lozq_l6IaEOvhVNxqaIbB73NMbDQloQR74gCz7msKLlOAwMAAAGXWVLGXjeeSADF4ehT8ivmzOFyErww-i9tWUL-wbmhLUyyqPrpqVg8oQ',
+    username: 'dev-jmwy1888888888888888888',
+  };
+
+  return Response.json(ResponseBuilder.success(data, 'Success'));
 };

@@ -119,7 +119,48 @@ export class ProTableUtils {
         queryParams = options.onParamsTransform(queryParams);
       }
 
-      return requestFunction(queryParams);
+      try {
+        const response = await requestFunction(queryParams);
+
+        // 检查响应结构并转换为ProTable期望的格式
+        if (response && response.data && response.data.items && response.data.meta) {
+          // 适配PaginatedApiResponse结构
+          return {
+            data: response.data.items,
+            total: response.data.meta.total,
+            success: response.ok || true,
+          };
+        } else if (response && response.data && Array.isArray(response.data)) {
+          // 适配普通数组响应
+          return {
+            data: response.data,
+            total: response.data.length,
+            success: response.ok || true,
+          };
+        } else if (response && Array.isArray(response)) {
+          // 直接是数组的情况
+          return {
+            data: response,
+            total: response.length,
+            success: true,
+          };
+        } else {
+          // 其他情况，尝试直接返回
+          console.warn('Unexpected response structure:', response);
+          return {
+            data: [],
+            total: 0,
+            success: false,
+          };
+        }
+      } catch (error) {
+        console.error('ProTable request error:', error);
+        return {
+          data: [],
+          total: 0,
+          success: false,
+        };
+      }
     };
   }
 }

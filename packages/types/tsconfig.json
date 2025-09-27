@@ -5,6 +5,7 @@
     "allowJs": true,
     "baseUrl": "src",
     "esModuleInterop": true,
+    "strictNullChecks": true,
     "incremental": true,
     "outDir": "dist",
     "rootDir": "src"

@@ -10,7 +10,6 @@ import { prisma } from '@repo/prisma';
 import { headers, cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 import { Request } from '@/lib/request';
-import './env-init';
 
 export type NextAuthUser = Session['user'];
 

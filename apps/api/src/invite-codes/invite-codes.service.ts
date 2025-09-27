@@ -7,7 +7,7 @@ import {
   InviteCodeQueryDto,
   InviteCodeType,
   createPaginateResponse,
-  ApiResponse,
+  PaginatedApiResponse,
 } from '@repo/types';
 import { BaseService } from '../common/base.service';
 import crypto from 'crypto';
@@ -40,7 +40,9 @@ export class InviteCodesService extends BaseService {
     }
   }
 
-  async findAll(query: InviteCodeQueryDto): Promise<ApiResponse<any>> {
+  async findAll(
+    query: InviteCodeQueryDto,
+  ): Promise<PaginatedApiResponse<InviteCode>> {
     try {
       // 构建查询条件
       const where: any = {};

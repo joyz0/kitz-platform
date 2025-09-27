@@ -7,7 +7,7 @@ import {
   UserQueryDto,
   UserRole,
   createPaginateResponse,
-  ApiResponse,
+  PaginatedApiResponse,
 } from '@repo/types';
 import { BaseService } from '../common/base.service';
 
@@ -36,7 +36,7 @@ export class UsersService extends BaseService {
     }
   }
 
-  async findAll(query: UserQueryDto): Promise<ApiResponse<any>> {
+  async findAll(query: UserQueryDto): Promise<PaginatedApiResponse<User>> {
     try {
       // 构建查询条件
       const where: any = {};
@@ -123,7 +123,10 @@ export class UsersService extends BaseService {
         data: updateUserDto,
       });
 
-      this.logSuccess('User updated', { id: user.id, updatedFields: Object.keys(updateUserDto) });
+      this.logSuccess('User updated', {
+        id: user.id,
+        updatedFields: Object.keys(updateUserDto),
+      });
       return user;
     } catch (error) {
       this.handleError(error, `update user with ID: ${id}`);

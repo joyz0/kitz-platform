@@ -79,7 +79,7 @@ const columns: ProColumns<InviteCodeItem>[] = [
     hideInTable: true,
     hideInForm: true,
     search: {
-      transform: (value) => {
+      transform: (value = []) => {
         return {
           startTime: value[0],
           endTime: value[1],
@@ -187,8 +187,8 @@ export default () => {
         },
       }}
       form={{
-        // 由于配置了 transform，提交的参数与定义的不同这里需要转化一下
         syncToUrl: (values, type) => {
+          console.log(111, values);
           if (type === 'get') {
             return {
               ...values,

@@ -11,6 +11,7 @@ export interface EnvLoaderOptions {
 export class EnvLoader {
   private static loaded = false;
   private static config: Record<string, string | number> = {};
+  private static loadOptions: EnvLoaderOptions | undefined;
 
   /**
    * 加载环境变量
@@ -19,6 +20,9 @@ export class EnvLoader {
     if (this.loaded) {
       return this.config as T;
     }
+
+    // 保存加载选项供后续方法使用
+    this.loadOptions = options;
 
     const env = options?.env || process.env.NODE_ENV || 'development';
     const basePath = options?.path || process.cwd();
@@ -66,7 +70,7 @@ export class EnvLoader {
    */
   static get(key: string, defaultValue?: any): any {
     if (!this.loaded) {
-      this.load();
+      this.load(this.loadOptions);
     }
 
     return this.config[key] !== undefined ? this.config[key] : defaultValue;
@@ -77,7 +81,7 @@ export class EnvLoader {
    */
   static getAll(): Record<string, string | number> {
     if (!this.loaded) {
-      this.load();
+      this.load(this.loadOptions);
     }
 
     return { ...this.config };
@@ -108,7 +112,7 @@ export class EnvLoader {
    */
   static getNextConfigEnv(): Record<string, string> {
     if (!this.loaded) {
-      this.load();
+      this.load(this.loadOptions);
     }
 
     const clientEnvs: Record<string, string> = {};
@@ -127,7 +131,7 @@ export class EnvLoader {
    */
   static getByPrefix(prefix: string): Record<string, string | number> {
     if (!this.loaded) {
-      this.load();
+      this.load(this.loadOptions);
     }
 
     const prefixedEnvs: Record<string, string | number> = {};

@@ -15,19 +15,25 @@ import { RoutePath } from '@/lib/constants';
 import { signUp } from '@/actions/login';
 import { useActionState, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
-import { KitResponse } from '@repo/types';
+import { ApiResponse } from '@repo/types';
 import { encryptFrontPassword } from '../utils';
 
 export default function SignUpPage() {
   const [formResult, formAction, isPending] = useActionState<
-    KitResponse,
+    ApiResponse<any>,
     FormData
-  >(async (prevState: KitResponse, req: FormData) => {
-    const pwd = req.get('password') as string;
-    const encryptedPwd = await encryptFrontPassword(pwd, true);
-    req.set('password', encryptedPwd);
-    return signUp(prevState, req);
-  }, {});
+  >(
+    async (prevState: ApiResponse, req: FormData) => {
+      const pwd = req.get('password') as string;
+      const encryptedPwd = await encryptFrontPassword(pwd, true);
+      req.set('password', encryptedPwd);
+      return signUp(prevState, req);
+    },
+    {
+      ok: false,
+      code: 0,
+    },
+  );
   const [formData, setFormData] = useState<any>({});
 
   function handleChange(e: React.FormEvent<HTMLInputElement>, name: string) {

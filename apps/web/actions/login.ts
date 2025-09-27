@@ -2,7 +2,13 @@
 
 import { signIn, signOut } from '@/lib/auth';
 import { RoutePath } from '@/lib/constants';
-import { loginDto, registerDto, KitResponse } from '@repo/types';
+import {
+  loginDto,
+  registerDto,
+  ApiResponse,
+  ResponseBuilder,
+  RegisterDto,
+} from '@repo/types';
 import { userRepo, inviteCodeRepo } from '@repo/database';
 import { saltAndHashPassword } from '@/lib/utils';
 import { redirect } from 'next/navigation';
@@ -14,27 +20,19 @@ export async function logout() {
   });
 }
 
-export async function login(prevState: KitResponse, req: FormData) {
+export async function login(prevState: ApiResponse, req: FormData) {
   const json = Object.fromEntries(req.entries());
   delete json.redirectTo;
   const query = loginDto.safeParse(json);
 
   if (!query.success) {
-    return {
-      success: false,
-      data: false,
-      message: '参数类型不正确',
-    };
+    return ResponseBuilder.error('参数类型不正确', 400);
   }
   try {
     await signIn('credentials', req);
   } catch (error) {
     if (error instanceof AuthError) {
-      return {
-        success: false,
-        data: false,
-        message: '登录失败',
-      };
+      return ResponseBuilder.error('登录失败', 401);
     }
     // Otherwise if a redirects happens Next.js can handle it
     // so you can just re-thrown the error and let Next.js handle it.
@@ -42,78 +40,46 @@ export async function login(prevState: KitResponse, req: FormData) {
     // https://nextjs.org/docs/app/api-reference/functions/redirect#server-component
     throw error;
   }
-  return {
-    success: true,
-    data: true,
-    message: '登录成功',
-  };
+  return ResponseBuilder.success(true, '登录成功');
 }
 
-export async function loginByProvider(prevState: KitResponse, req: FormData) {
+export async function loginByProvider(prevState: ApiResponse, req: FormData) {
   const json = Object.fromEntries(req.entries());
   req.delete('provider');
   try {
     await signIn(json.provider as string, req);
   } catch (error) {
     if (error instanceof AuthError) {
-      return {
-        success: false,
-        data: false,
-        message: '登录失败',
-      };
+      return ResponseBuilder.error('登录失败', 401);
     }
     throw error;
   }
-  return {
-    success: true,
-    data: true,
-    message: '登录成功',
-  };
+  return ResponseBuilder.success(true, '登录成功');
 }
 
-export async function signUp(prevState: KitResponse, req: FormData) {
+export async function signUp(prevState: ApiResponse, req: FormData) {
   const query = registerDto.safeParse(Object.fromEntries(req.entries()));
 
   if (!query.success) {
-    return {
-      success: false,
-      data: query,
-      message: '参数类型不正确',
-    };
+    return ResponseBuilder.error('参数类型不正确', 400);
   }
 
-  const { email, password, inviteCode } = query.data;
+  const { email, password, inviteCode } = query.data as RegisterDto;
 
   try {
     const existingUser = await userRepo.findByEmail(email);
     if (existingUser) {
-      return {
-        success: false,
-        data: query,
-        message: '该邮箱已被使用',
-      };
+      return ResponseBuilder.error('该邮箱已被使用', 409);
     }
     const existingInviteCode = await inviteCodeRepo.findByCode(inviteCode);
     if (!existingInviteCode) {
-      return {
-        success: false,
-        data: query,
-        message: '无效的邀请码',
-      };
+      return ResponseBuilder.error('无效的邀请码', 400);
     }
     if (existingInviteCode.usedAt) {
-      return {
-        success: false,
-        data: query,
-        message: '邀请码已被使用',
-      };
+      return ResponseBuilder.error('邀请码已被使用', 400);
     }
     if (new Date() > existingInviteCode.expiresAt) {
-      return {
-        success: false,
-        data: query,
-        message: '邀请码已失效',
-      };
+      return ResponseBuilder.error('邀请码已失效', 400);
     }
     const [user, code] = await userRepo.signUp({
       email,
@@ -121,11 +87,7 @@ export async function signUp(prevState: KitResponse, req: FormData) {
       inviteCode,
     });
   } catch (error) {
-    return {
-      success: false,
-      data: query,
-      message: '用户创建失败',
-    };
+    return ResponseBuilder.error('用户创建失败', 500);
   }
   try {
     req.append('redirectTo', RoutePath.DASHBOARD);
@@ -136,9 +98,5 @@ export async function signUp(prevState: KitResponse, req: FormData) {
     }
     throw error;
   }
-  return {
-    success: true,
-    data: query,
-    message: '注册成功',
-  };
+  return ResponseBuilder.success(query.data, '注册成功');
 }
