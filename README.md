@@ -205,3 +205,30 @@ pnpm test:e2e
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+用户提出的核心问题很好：在 Next.js 中 server 和 client 的边界应该定在哪里？
+
+让我分析几种方案：
+
+方案1：将权限检查提升到最上层 (推荐)
+
+在 dashboard/layout.tsx 中根据路径进行权限检查
+
+方案2：重新设计边界
+
+将 Client 边界推到叶子组件，保持布局层为 Server
+
+方案3：使用路由中间件
+
+在 middleware.ts 中处理路由级权限
+
+方案4：混合权限策略
+
+Server 层做核心检查，Client 层做 UI 控制
+
+我觉得方案1最合适，因为：
+
+1. 保持了现有架构的一致性
+2. 集中化权限管理
+
+3. 简化了系统复杂度，减少了不必要的权限逻辑分散

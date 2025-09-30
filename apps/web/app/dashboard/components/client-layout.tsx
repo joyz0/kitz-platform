@@ -1,26 +1,19 @@
 'use client';
-import React, { useState, startTransition } from 'react';
+import React, { useState, startTransition, useMemo } from 'react';
 import {
-  AppstoreOutlined,
-  BarChartOutlined,
-  CloudOutlined,
-  ShopOutlined,
-  TeamOutlined,
-  UploadOutlined,
   UserOutlined,
-  VideoCameraOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, theme, Button, Avatar, Dropdown } from 'antd';
 import { useRouter } from 'next/navigation';
-import ChatBot from '@/components/chat-bot';
 import { logout } from '@/actions/login';
 import { RoutePath, TOKEN_STORAGE_KEY } from '@/lib/constants';
 import { useClientSession } from './client-layout-wrapper';
 import { storage } from '@/lib/storage';
 import { Request } from '@/lib/request';
+import { UserRole } from '@repo/types';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -35,26 +28,37 @@ const siderStyle: React.CSSProperties = {
   scrollbarGutter: 'stable',
 };
 
-const items: any[] = [
-  {
-    key: '1',
-    icon: React.createElement(UserOutlined),
-    label: '如何使用',
-    children: [
-      { key: RoutePath.DOC_STARTER, label: '快速开始' },
-      { key: RoutePath.DOC_INTRO, label: '介绍' },
-    ],
-  },
-  {
-    key: '2',
-    icon: React.createElement(UserOutlined),
-    label: '系统管理',
-    children: [
-      { key: RoutePath.SYSTEM_USER, label: '用户管理' },
-      { key: RoutePath.SYSTEM_INVITE_CODE, label: '邀请码管理' },
-    ],
-  },
-];
+/**
+ * 根据用户角色生成菜单项
+ */
+const getMenuItems = (userRole: UserRole | undefined): any[] => {
+  const baseItems = [
+    {
+      key: '1',
+      icon: React.createElement(UserOutlined),
+      label: '如何使用',
+      children: [
+        { key: RoutePath.DOC_STARTER, label: '快速开始' },
+        { key: RoutePath.DOC_INTRO, label: '介绍' },
+      ],
+    },
+  ];
+
+  // 只有管理员才能看到系统管理菜单
+  if (userRole === 'ADMIN' || userRole === 'USER') {
+    baseItems.push({
+      key: '2',
+      icon: React.createElement(UserOutlined),
+      label: '系统管理',
+      children: [
+        { key: RoutePath.SYSTEM_USER, label: '用户管理' },
+        { key: RoutePath.SYSTEM_INVITE_CODE, label: '邀请码管理' },
+      ],
+    });
+  }
+
+  return baseItems;
+};
 
 const userMenu: MenuProps['items'] = [
   {
@@ -74,8 +78,14 @@ export default function ClientLayout({
   } = theme.useToken();
   const router = useRouter();
   const session = useClientSession();
-  const { email, id, image, name, role } = session?.user || {};
+  const { email, name, role } = session?.user || {};
   const nickName = name || email || 'User';
+
+  // 根据用户角色生成菜单项
+  const menuItems = useMemo(() => {
+    return getMenuItems(role as UserRole);
+  }, [role]);
+
   const handleUserMenuClick: MenuProps['onClick'] = (e) => {
     if (e.key === '1') {
       startTransition(async () => {
@@ -102,7 +112,7 @@ export default function ClientLayout({
           theme="dark"
           mode="inline"
           defaultOpenKeys={['1']}
-          items={items}
+          items={menuItems}
           onClick={handleMenuClick}
         />
       </Sider>
