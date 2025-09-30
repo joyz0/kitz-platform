@@ -13,7 +13,7 @@ export { ServerErrorHandler } from './server';
 // 客户端错误处理器（运行时导入避免服务端执行）
 export type { ClientErrorHandler } from './client';
 
-export { UnifiedErrorHandler } from './error-mapping';
+export { UnifiedErrorHandler } from '../error-mapping';
 
 /**
  * 动态导入客户端错误处理器

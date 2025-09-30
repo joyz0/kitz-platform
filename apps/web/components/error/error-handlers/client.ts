@@ -1,7 +1,7 @@
 'use client';
 
 import { RoutePath } from '@/lib/constants';
-import { UnifiedErrorHandler } from './error-mapping';
+import { UnifiedErrorHandler } from '../error-mapping';
 import { StatusCode, StatusCodeMap } from '@repo/types/enums/status-code';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
@@ -13,7 +13,10 @@ export class ClientErrorHandler {
    * 客户端重定向到错误页面
    * 只能在 Client 组件中使用
    */
-  static redirectToError(router: AppRouterInstance, statusCode: StatusCode | string) {
+  static redirectToError(
+    router: AppRouterInstance,
+    statusCode: StatusCode | string,
+  ) {
     const url = `${RoutePath.ERROR_URL}?error=${statusCode}`;
     router.push(url);
   }
@@ -21,7 +24,11 @@ export class ClientErrorHandler {
   /**
    * 处理请求错误 - 根据状态码决定是否重定向
    */
-  static handleRequestError(router: AppRouterInstance, statusCode: number, message: string) {
+  static handleRequestError(
+    router: AppRouterInstance,
+    statusCode: number,
+    message: string,
+  ) {
     if (UnifiedErrorHandler.isAuthError(statusCode)) {
       // 认证错误直接重定向到错误页面
       this.redirectToError(router, StatusCodeMap.UNAUTHORIZED.toString());
@@ -60,9 +67,11 @@ export class ClientErrorHandler {
     }
 
     // 检查是否包含认证相关错误信息
-    if (UnifiedErrorHandler.isAuthError(parseInt(errorMessage)) ||
-        errorMessage.includes('unauthorized') ||
-        errorMessage.includes('token')) {
+    if (
+      UnifiedErrorHandler.isAuthError(parseInt(errorMessage)) ||
+      errorMessage.includes('unauthorized') ||
+      errorMessage.includes('token')
+    ) {
       this.redirectToError(router, StatusCodeMap.UNAUTHORIZED.toString());
       return;
     }

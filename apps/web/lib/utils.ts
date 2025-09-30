@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { ServerErrorHandler } from '@/lib/error-handlers';
+import { ServerErrorHandler } from '@/components/error/error-handlers';
 
 export function saltAndHashPassword(password: string) {
   const saltRounds = 10;

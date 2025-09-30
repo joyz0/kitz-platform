@@ -11,7 +11,7 @@ import { prisma } from '@repo/prisma';
 import { headers, cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 import { Request } from '@/lib/request';
-import { UnifiedErrorHandler } from './error-handlers/error-mapping';
+import { UnifiedErrorHandler } from '../components/error/error-mapping';
 import { StatusCodeMap } from '@repo/types/enums/status-code';
 
 export type NextAuthUser = Session['user'];
@@ -73,7 +73,10 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
 
       // 检查是否有错误状态需要重定向到错误页面
       if (auth?.error) {
-        const errorUrl = UnifiedErrorHandler.createErrorUrl(auth.error as string, origin);
+        const errorUrl = UnifiedErrorHandler.createErrorUrl(
+          auth.error as string,
+          origin,
+        );
         return Response.redirect(errorUrl);
       }
 

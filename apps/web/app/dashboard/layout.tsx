@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import * as React from 'react';
 import ClientLayoutWrapper from './components/client-layout-wrapper';
-import { ServerErrorHandler } from '@/lib/error-handlers';
+import { ServerErrorHandler } from '@/components/error/error-handlers';
 
 export default async function DashboardLayout({
   children,

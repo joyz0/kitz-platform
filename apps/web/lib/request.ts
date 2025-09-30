@@ -1,7 +1,7 @@
 import { EventType } from './constants';
 import { CustomEventBus } from './event';
 import { StatusCodeMap } from '@repo/types/enums/status-code';
-import { UnifiedErrorHandler } from './error-handlers';
+import { UnifiedErrorHandler } from '../components/error/error-handlers';
 
 type QueryParam = string | number | boolean | null | undefined;
 

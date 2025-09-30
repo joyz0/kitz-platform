@@ -4,7 +4,7 @@ import { RoutePath } from '@/lib/constants';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { UnifiedErrorHandler } from '@/lib/error-handlers/error-mapping';
+import { UnifiedErrorHandler } from '@/components/error/error-mapping';
 import type { StatusCode } from '@repo/types/enums/status-code';
 
 function AuthError() {
