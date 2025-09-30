@@ -1,7 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { ErrorType, RoutePath } from '@/lib/constants';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { ServerErrorHandler } from '@/lib/error-handlers';
 
 export function saltAndHashPassword(password: string) {
   const saltRounds = 10;
@@ -11,10 +9,7 @@ export function saltAndHashPassword(password: string) {
 }
 
 export async function access(roles: string[]) {
+  const { auth } = await import('@/lib/auth');
   const session = await auth();
-  if (!roles.some((role) => role === session?.user?.role)) {
-    const url = new URL(RoutePath.ERROR_URL, process.env.BASE_URL);
-    url.searchParams.append('error', ErrorType.ACCESS_DENIED);
-    redirect(url.href);
-  }
+  ServerErrorHandler.checkAccess(session?.user?.role, roles);
 }

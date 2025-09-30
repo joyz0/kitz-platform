@@ -1,12 +1,3 @@
-// https://authjs.dev/guides/pages/error
-export enum ErrorType {
-  CONFIGURATION = 'Configuration',
-  ACCESS_DENIED = 'AccessDenied',
-  VERIFICATION = 'Verification',
-  CREDENTIALS_SIGNIN = 'CredentialsSignin',
-  DEFAULT = 'Default',
-}
-
 export const TOKEN_STORAGE_KEY = 'authjs.session-token';
 
 export enum EventType {

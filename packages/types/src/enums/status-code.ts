@@ -4,7 +4,8 @@ export const StatusCodeEnum = z.enum([
   '200', '400', '401', '403', '404', '500', // HTTP 状态码
   '101001', '101002', '101003', // 数据库错误
   '200001', // 用户错误
-  '300001'  // 订单错误
+  '300001', // 订单错误
+  '400001', '400002', '400003', '400004', '400005' // 认证错误
 ]);
 
 export type StatusCode = z.infer<typeof StatusCodeEnum>;
@@ -24,6 +25,13 @@ export const StatusCodeMap = {
   DB_RECORD_NOT_FOUND: 101003,
   USER_NOT_EXIST: 200001,
   ORDER_EXPIRED: 300001,
+
+  // 认证模块 (400xxx)
+  TOKEN_EXPIRED: 400001,
+  TOKEN_INVALID: 400002,
+  REFRESH_TOKEN_EXPIRED: 400003,
+  REFRESH_TOKEN_INVALID: 400004,
+  TOKEN_MISSING: 400005,
 } as const;
 
 // 状态码标签映射
@@ -39,4 +47,9 @@ export const StatusCodeLabels: Record<string, string> = {
   '101003': '记录不存在',
   '200001': '用户不存在',
   '300001': '订单已过期',
+  '400001': 'Token已过期',
+  '400002': 'Token无效',
+  '400003': 'RefreshToken已过期',
+  '400004': 'RefreshToken无效',
+  '400005': '缺少Token',
 };

@@ -1,5 +1,7 @@
 import { EventType } from './constants';
 import { CustomEventBus } from './event';
+import { StatusCodeMap } from '@repo/types/enums/status-code';
+import { UnifiedErrorHandler } from './error-handlers';
 
 type QueryParam = string | number | boolean | null | undefined;
 
@@ -7,12 +9,25 @@ interface QueryParams {
   [key: string]: QueryParam | QueryParam[];
 }
 
-const whiteList = ['/auth/login'];
+const whiteList = ['/auth/login', '/auth/refresh-token'];
 
 async function ResponseInterceptor(response: Response) {
   const json = await response.json();
   if (!json.ok) {
-    CustomEventBus.emit(EventType.REQUEST_ERROR, json.message);
+    // 使用中心化错误处理工具判断错误类型
+    if (UnifiedErrorHandler.isAuthError(json.code)) {
+      console.warn('Authentication error:', json.message);
+      CustomEventBus.emit(EventType.REQUEST_ERROR, json.message);
+    } else {
+      switch (json.code) {
+        case StatusCodeMap.FORBIDDEN:
+          console.warn('Permission denied:', json.message);
+          CustomEventBus.emit(EventType.REQUEST_ERROR, json.message);
+          break;
+        default:
+          CustomEventBus.emit(EventType.REQUEST_ERROR, json.message);
+      }
+    }
     throw new Error(json.message);
   }
   return json;
@@ -28,14 +43,12 @@ export class Request {
   ): Headers {
     const headers = new Headers();
 
-    // 设置默认 headers
     Object.entries(defaultHeaders).forEach(([key, value]) => {
       headers.set(key, value);
     });
 
     const isPublic = whiteList.some((path) => url.indexOf(path) > -1);
 
-    // 检查是否已有手动传入的 Authorization
     let hasAuthHeader = false;
     if (options?.headers) {
       const incomingHeaders = new Headers(options.headers);
@@ -44,12 +57,10 @@ export class Request {
         incomingHeaders.has('authorization');
     }
 
-    // 如果不是公开接口且没有手动传入 Authorization，使用 Request.token
     if (!isPublic && !hasAuthHeader && Request.token) {
       headers.set('Authorization', `Bearer ${Request.token}`);
     }
 
-    // 然后添加传入的 headers，会覆盖同名的默认值
     if (options?.headers) {
       const incomingHeaders = new Headers(options.headers);
       incomingHeaders.forEach((value, key) => {

@@ -20,6 +20,7 @@ import { logout } from '@/actions/login';
 import { RoutePath, TOKEN_STORAGE_KEY } from '@/lib/constants';
 import { useClientSession } from './client-layout-wrapper';
 import { storage } from '@/lib/storage';
+import { Request } from '@/lib/request';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -78,6 +79,7 @@ export default function ClientLayout({
   const handleUserMenuClick: MenuProps['onClick'] = (e) => {
     if (e.key === '1') {
       startTransition(async () => {
+        Request.token = null;
         storage.remove(TOKEN_STORAGE_KEY);
         await logout();
       });

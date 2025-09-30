@@ -199,39 +199,8 @@ pnpm test:e2e
 6. 为什么next-auth默认会将token存储在cookie中：next-auth源码会在登录成功后将token放入cookie中
 7. 我每次刷新页面输出的token.exp都会变化，且是30天后的时间戳，与我预期不符：这是NextAuth内部管理session生成的，其实本项目完全不依赖NextAuth鉴权
 8. 评估是否要使用https://swr.vercel.app/zh-CN/examples/ssr
-9. refresh token应该在哪些情况下执行？关于ResponseInterceptor中执行，请问若当前用户却是没有权限访问而不是因为token失效，应该如何处理
 
-10. Token 即将过期时（主动刷新）
-
-- 时机：Token 过期前 30-60 秒
-- 目的：避免用户请求时 token 已过期
-- 实现位置：
-  - Frontend: NextAuth JWT callback 中的自动刷新逻辑
-  - Backend: 在处理请求前检查 token 有效期
-
-2. API 返回 401 未授权时（被动刷新）
-
-- 时机：收到 401 响应后
-- 目的：处理时钟偏差或意外过期的情况
-- 实现位置：
-  - HTTP 拦截器中捕获 401 响应
-  - 自动尝试刷新 token 并重试原请求
-
-3. 用户主动操作时（按需刷新）
-
-- 时机：用户点击"刷新"按钮或重新登录
-- 目的：手动更新认证状态
-- 实现位置：UI 组件的事件处理
-
-4. 应用启动时（初始化刷新）
-
-- 时机：应用加载时检查 token 状态
-- 目的：确保用户会话有效性
-- 实现位置：应用初始化逻辑
-
-10. 后端增加401还是403逻辑
-11. 处理redis没启动导致refreshToken死循环
-12. Request重置会Request.token方案，因为request不能依赖server only的auth.ts
+9. 检查server comp和client comp的交界点，我经常会受制于client comp不能包含server comp，最佳实践是什么
 
 ## 📄 License
 

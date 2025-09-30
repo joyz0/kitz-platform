@@ -6,11 +6,13 @@ import Credentials from 'next-auth/providers/credentials';
 import { loginDto } from '@repo/types';
 import { getJWTExpiration } from '@repo/utils/shared';
 import { PrismaAdapter } from './prisma-adapter';
-import { ErrorType, RoutePath } from './constants';
+import { RoutePath } from './constants';
 import { prisma } from '@repo/prisma';
 import { headers, cookies } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 import { Request } from '@/lib/request';
+import { UnifiedErrorHandler } from './error-handlers/error-mapping';
+import { StatusCodeMap } from '@repo/types/enums/status-code';
 
 export type NextAuthUser = Session['user'];
 
@@ -68,6 +70,13 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       const { origin, pathname, href } = request.nextUrl;
       const isLoggedIn = !!auth?.user;
       const isProtected = !whitelist.some((path) => pathname.startsWith(path));
+
+      // 检查是否有错误状态需要重定向到错误页面
+      if (auth?.error) {
+        const errorUrl = UnifiedErrorHandler.createErrorUrl(auth.error as string, origin);
+        return Response.redirect(errorUrl);
+      }
+
       if (!isLoggedIn && isProtected) {
         const redirectUrl = new URL(RoutePath.SIGNIN_URL, origin);
         redirectUrl.searchParams.append('callbackUrl', href);
@@ -118,7 +127,12 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
         const exp = getJWTExpiration(user.accessToken!);
         if (exp) {
           token.exp = exp;
-          console.log('JWT decoded exp:', exp, 'Current time:', Math.floor(Date.now() / 1000));
+          console.log(
+            'JWT decoded exp:',
+            exp,
+            'Current time:',
+            Math.floor(Date.now() / 1000),
+          );
         } else {
           console.warn('Failed to decode JWT, using default expiration');
           token.exp = Math.floor(Date.now() / 1000) + expiresIn;
@@ -126,7 +140,6 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
 
         // 重置刷新相关状态
         token.lastRefreshAttempt = 0;
-        token.refreshFailureCount = 0;
       } else if (account) {
         token.accessToken = account.access_token;
         if (!token.exp) {
@@ -155,7 +168,6 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
       if (shouldRefresh) {
         console.log('Token expiring soon, refreshing...');
 
-        // 记录刷新尝试时间
         token.lastRefreshAttempt = currentTime;
 
         try {
@@ -164,57 +176,33 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
             {
               refreshToken: token.refreshToken,
             },
-            {
-              headers: {
-                Authorization: `Bearer ${token.accessToken}`,
-              },
-            },
           );
 
-          // 使用工具函数解码新的 JWT 获取新的过期时间
           const newExp = getJWTExpiration(res.data.accessToken);
           const finalExp = newExp || Math.floor(Date.now() / 1000) + expiresIn;
 
           console.log('Token refreshed successfully, new exp:', finalExp);
 
-          // 刷新成功，重置失败计数
           return {
             ...token,
             accessToken: res.data.accessToken,
             refreshToken: res.data.refreshToken,
             exp: finalExp,
             lastRefreshAttempt: currentTime,
-            refreshFailureCount: 0,
           };
         } catch (error) {
-          console.error('Token refresh failed:', error);
-
-          // 增加失败计数
-          const failureCount = ((token.refreshFailureCount as number) || 0) + 1;
-
-          // 如果连续失败次数过多，标记为访问被拒绝
-          if (failureCount >= 3) {
-            console.error('Too many refresh failures, marking as access denied');
-            return {
-              ...token,
-              error: ErrorType.ACCESS_DENIED,
-              refreshFailureCount: failureCount,
-            };
-          }
-
-          // 否则保持原状态，但记录失败次数
+          console.warn('Token refresh failed, redirecting to login:', error);
           return {
             ...token,
-            refreshFailureCount: failureCount,
-            lastRefreshAttempt: currentTime,
+            error: StatusCodeMap.UNAUTHORIZED.toString(),
           };
         }
       }
 
-      // 如果 token 已经过期且刷新失败多次，标记错误
-      if (token.exp && currentTime > token.exp && ((token.refreshFailureCount as number) || 0) >= 3) {
-        console.error('Token expired and refresh failed multiple times');
-        return { ...token, error: ErrorType.ACCESS_DENIED };
+      // 如果 token 已经过期，标记为需要重新登录
+      if (token.exp && currentTime > token.exp) {
+        console.warn('Token expired, redirecting to login');
+        return { ...token, error: StatusCodeMap.TOKEN_EXPIRED.toString() };
       }
 
       return token;
@@ -226,7 +214,6 @@ export const { handlers, signIn, signOut, auth }: any = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
         session.error = token.error as string;
       }
       return session;
