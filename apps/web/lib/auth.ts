@@ -3,7 +3,7 @@ import type { Session } from 'next-auth';
 import type { Provider } from 'next-auth/providers';
 import GitHub from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
-import { loginDto } from '@repo/types';
+import { loginDto, UserRole } from '@repo/types';
 import { getJWTExpiration } from '@repo/utils/shared';
 import { PrismaAdapter } from './prisma-adapter';
 import { RoutePath } from './constants';

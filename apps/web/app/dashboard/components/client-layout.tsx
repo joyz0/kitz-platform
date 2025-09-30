@@ -45,7 +45,7 @@ const getMenuItems = (userRole: UserRole | undefined): any[] => {
   ];
 
   // 只有管理员才能看到系统管理菜单
-  if (userRole === 'ADMIN' || userRole === 'USER') {
+  if (userRole === UserRole.ADMIN || userRole === UserRole.USER) {
     baseItems.push({
       key: '2',
       icon: React.createElement(UserOutlined),
