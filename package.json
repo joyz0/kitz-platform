@@ -13,7 +13,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "git:init": "git config --global user.email 1214327383@qq.com && git config --global user.name joyz0",
-    "check-updates": "pnpm recursive exec -- pnpm dlx npm-check-updates -u"
+    "check-updates": "pnpm recursive exec -- pnpm dlx npm-check-updates -u",
+    "runner": "./deploy.sh"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
