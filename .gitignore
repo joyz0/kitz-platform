@@ -24,7 +24,7 @@ test-results/
 playwright/.cache/
 playwright-report/
 
-# *.tsbuildinfo
+*.tsbuildinfo
 
 # Turbo
 .turbo
