@@ -1,6 +1,7 @@
 # JWT 鉴权架构文档
 
 ## 目录
+
 - [架构概览](#架构概览)
 - [完整鉴权流程](#完整鉴权流程)
 - [Token 管理机制](#token-管理机制)
@@ -58,7 +59,7 @@ sequenceDiagram
 4. **后端生成 Tokens**:
    ```typescript
    // apps/api/src/auth/auth.service.ts
-   const accessToken = this.jwtService.sign(payload);  // 1小时过期
+   const accessToken = this.jwtService.sign(payload); // 1小时过期
    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' }); // 7天过期
    ```
 5. **NextAuth JWT Callback** → 处理返回的用户数据
@@ -91,7 +92,7 @@ sequenceDiagram
 if (Date.now() / 1000 > token.exp - 30 && token.refreshToken) {
   // 距离过期还有30秒时自动刷新
   const res = await Request.post('/auth/refresh-token', {
-    refreshToken: token.refreshToken
+    refreshToken: token.refreshToken,
   });
 
   return {
@@ -167,11 +168,11 @@ localStorage.setItem(TOKEN_STORAGE_KEY, session.accessToken)
 
 ```typescript
 // 业务逻辑中
-const session = await auth();        // 从 NextAuth Cookie
+const session = await auth(); // 从 NextAuth Cookie
 const userInfo = session.user;
 
 // API 请求中
-Request.token                        // 从内存静态属性
+Request.token; // 从内存静态属性
 ```
 
 ### 3. token.exp 混乱问题
@@ -208,6 +209,7 @@ expiresIn: '1h'           // 1小时 - JWT 真实过期时间
 ### 方案1: 完全依赖 NextAuth (推荐)
 
 **优点**:
+
 - 单一数据源，无同步问题
 - 自动处理刷新和清理
 - 更安全 (加密存储)
@@ -215,6 +217,7 @@ expiresIn: '1h'           // 1小时 - JWT 真实过期时间
 **实施步骤**:
 
 1. **移除手动存储**:
+
    ```typescript
    // 移除这些
    Request.token = session.accessToken;  ❌
@@ -222,14 +225,15 @@ expiresIn: '1h'           // 1小时 - JWT 真实过期时间
    ```
 
 2. **修改 Request 类**:
+
    ```typescript
    export class Request {
      // 移除静态 token 属性
 
      static async get(url: string, queryData?: any, options?: any) {
-       const session = await auth();  // 每次都获取最新 session
+       const session = await auth(); // 每次都获取最新 session
 
-       const isPublic = whiteList.some(path => url.includes(path));
+       const isPublic = whiteList.some((path) => url.includes(path));
        if (!isPublic && session?.accessToken) {
          headers['Authorization'] = `Bearer ${session.accessToken}`;
        }
@@ -240,6 +244,7 @@ expiresIn: '1h'           // 1小时 - JWT 真实过期时间
    ```
 
 3. **简化 NextAuth 配置**:
+
    ```typescript
    export const { handlers, signIn, signOut, auth } = NextAuth({
      providers,
@@ -261,8 +266,8 @@ expiresIn: '1h'           // 1小时 - JWT 真实过期时间
            // 刷新逻辑...
          }
          return token;
-       }
-     }
+       },
+     },
    });
    ```
 
@@ -281,9 +286,9 @@ useLayoutEffect(() => {
 
 // 登出时完整清理
 const handleLogout = () => {
-  Request.token = null;                    // 清理内存
-  storage.remove(TOKEN_STORAGE_KEY);       // 清理 localStorage
-  await signOut();                         // NextAuth 清理
+  Request.token = null; // 清理内存
+  storage.remove(TOKEN_STORAGE_KEY); // 清理 localStorage
+  await signOut(); // NextAuth 清理
 };
 ```
 
@@ -300,6 +305,7 @@ const handleLogout = () => {
 **A**: 手动存储的 token 没有被清理。
 
 **解决**:
+
 ```typescript
 // 登出时清理所有存储
 Request.token = null;
@@ -318,12 +324,12 @@ await signOut();
 ## 环境变量配置
 
 ```bash
-# 后端 (apps/api)
+# 后端 (apps/api-server)
 TOKEN_EXPIRES_IN_HOURS=1           # JWT Access Token 过期时间
 REFRESH_TOKEN_EXPIRES_IN_DAYS=7    # Refresh Token 过期时间
 AUTH_SECRET=your-secret-key        # JWT 签名密钥
 
-# 前端 (apps/web)
+# 前端 (apps/admin-web)
 AUTH_SECRET=your-secret-key        # NextAuth 加密密钥 (与后端相同)
 NEXT_PUBLIC_API_URL=http://localhost:8080  # 后端 API 地址
 ```
@@ -339,5 +345,5 @@ NEXT_PUBLIC_API_URL=http://localhost:8080  # 后端 API 地址
 
 ---
 
-*文档版本: 1.0*
-*最后更新: 2024-09-27*
+_文档版本: 1.0_
+_最后更新: 2024-09-27_

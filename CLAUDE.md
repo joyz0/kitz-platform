@@ -15,22 +15,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Package-Specific Commands
 
-- **API Development**: `pnpm dev --filter=api` - Starts NestJS API on port 8080
-- **Web Development**: `pnpm dev --filter=web` - Starts Next.js web app on port 8081 with Turbopack
-- **Types Development**: `pnpm dev --filter=@repo/types`
-- **Utils Development**: `pnpm dev --filter=@repo/utils`
-- **Database Development**: `pnpm dev --filter=@repo/database`
-- **Prisma Development**: `pnpm dev --filter=@repo/prisma`
-- **Env Development**: `pnpm dev --filter=@repo/env`
-- **UI Development**: `pnpm dev --filter=@repo/ui`
+- **API Development**: `pnpm --filter=api-server run dev` - Starts NestJS API on port 8080
+- **Admin Web Development**: `pnpm --filter=admin-web run dev` - Starts Next.js web app on port 8081 with Turbopack
+- **Types Development**: `pnpm --filter=@repo/types run dev`
+- **Utils Development**: `pnpm --filter=@repo/utils run dev`
+- **Database Development**: `pnpm --filter=@repo/database run dev`
+- **Prisma Development**: `pnpm --filter=@repo/prisma run dev`
+- **Env Development**: `pnpm --filter=@repo/env run dev`
+- **UI Development**: `pnpm --filter=@repo/ui run dev`
 - **Database Operations**:
-  - `pnpm prisma-migrate --filter=@repo/prisma` - Run Prisma migrations
-  - `pnpm prisma-generate --filter=@repo/prisma` - Generate Prisma client
+  - `pnpm --filter=@repo/prisma run prisma-migrate` - Run Prisma migrations
+  - `pnpm --filter=@repo/prisma run prisma-generate` - Generate Prisma client
 
 ### Testing Individual Components
 
-- **Single API test**: `pnpm test --filter=api`
-- **Single web test**: `pnpm test --filter=web`
+- **Single API test**: `pnpm --filter=api-server run test`
+- **Single web test**: `pnpm --filter=admin-web run test`
 - **Watch mode**: Add `--watch` to any test command
 
 ## Project Architecture
@@ -39,7 +39,7 @@ This is a **Kitz Platform** - a full-stack TypeScript application built with Tur
 
 ### Core Applications
 
-- **`apps/api`** - NestJS backend API server (port 8080)
+- **`apps/api-server`** - NestJS backend API server (port 8080)
 
   - JWT authentication with refresh token support
   - Global guards, interceptors, and exception filters
@@ -48,7 +48,7 @@ This is a **Kitz Platform** - a full-stack TypeScript application built with Tur
   - Redis integration for caching/sessions
   - CORS configured for localhost:8081
 
-- **`apps/web`** - Next.js 15 frontend application (port 8081)
+- **`apps/admin-web`** - Next.js 15 frontend application (port 8081)
   - App Router with TypeScript
   - NextAuth v5 beta with dual authentication: GitHub OAuth + Credentials
   - Ant Design Pro Components for dashboard UI

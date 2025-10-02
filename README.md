@@ -17,13 +17,12 @@ A modern full-stack TypeScript platform built with Turborepo monorepo architectu
 
 ### Applications
 
-- **`apps/api`** - NestJS backend API (Port 8080)
-- **`apps/web`** - Next.js frontend application (Port 8081)
+- **`apps/api-server`** - NestJS backend API (Port 8080)
+- **`apps/admin-web`** - Next.js frontend application (Port 8081)
 
 ### Shared Packages
 
 - **`@repo/prisma`** - Database schema and client
-- **`@repo/api`** - Shared NestJS resources (DTOs, entities)
 - **`@repo/database`** - Database utilities and repositories
 - **`@repo/env`** - Environment management with validation
 - **`@repo/config`** - Shared configurations (ESLint, Prettier, TypeScript)
@@ -72,8 +71,8 @@ pnpm prisma-seed
 pnpm dev
 
 # Or start individually
-cd apps/api && pnpm dev    # API server on port 8080
-cd apps/web && pnpm dev    # Web app on port 8081
+cd apps/api-server && pnpm dev    # API server on port 8080
+cd apps/admin-web && pnpm dev    # Web app on port 8081
 ```
 
 ## 📝 Available Scripts
@@ -185,11 +184,11 @@ pnpm test:e2e
 - [ ] Supabase integration evaluation
 - [ ] Refine framework integration
 - [ ] SWR implementation for data fetching
-- [ ] API response format standardization
-- [ ] Session token behavior optimization
-- [ ] Enhanced error handling and logging
+- [x] API response format standardization
+- [x] Session token behavior optimization
+- [x] Enhanced error handling and logging
 
-## todo
+## Q&A
 
 1. 解决pnpm test报错问题：先执行build后在test就不报错了
 2. 跑通api controller测试用例，支持分页查询
@@ -201,12 +200,7 @@ pnpm test:e2e
 8. 评估是否要使用https://swr.vercel.app/zh-CN/examples/ssr
 
 9. 检查server comp和client comp的交界点，我经常会受制于client comp不能包含server comp，最佳实践是什么
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-用户提出的核心问题很好：在 Next.js 中 server 和 client 的边界应该定在哪里？
+   用户提出的核心问题很好：在 Next.js 中 server 和 client 的边界应该定在哪里？
 
 让我分析几种方案：
 
@@ -232,3 +226,7 @@ Server 层做核心检查，Client 层做 UI 控制
 2. 集中化权限管理
 
 3. 简化了系统复杂度，减少了不必要的权限逻辑分散
+
+## 📄 License
+
+This project is licensed under the MIT License.

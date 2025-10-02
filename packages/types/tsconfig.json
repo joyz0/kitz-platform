@@ -3,7 +3,6 @@
   "compilerOptions": {
     "composite": true,
     "allowJs": true,
-    "baseUrl": "src",
     "esModuleInterop": true,
     "strictNullChecks": true,
     "incremental": true,
