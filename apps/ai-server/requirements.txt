@@ -1,0 +1,28 @@
+# AI Server Dependencies
+grpcio==1.68.1
+grpcio-tools==1.68.1
+protobuf==5.29.2
+
+# Web Framework (optional, for internal HTTP endpoints)
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Data Validation
+pydantic==2.10.5
+pydantic-settings==2.7.1
+
+# Database (optional, if need to access PostgreSQL)
+asyncpg==0.30.0
+
+# Redis (for context management)
+redis==5.2.1
+
+# HTTP Client (for MCP calls)
+httpx==0.28.1
+
+# Utilities
+python-dotenv==1.0.1
+
+# Development
+pytest==8.3.4
+ruff==0.8.5

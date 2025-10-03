@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package ai;
+
+service AIService {
+  rpc ProcessChat (ChatRequest) returns (ChatResponse);
+  rpc MatchKeyword (KeywordRequest) returns (KeywordResponse);
+  rpc TestRule (TestRuleRequest) returns (TestRuleResponse);
+}
+
+message ChatRequest {
+  string user_id = 1;
+  string message = 2;
+  string session_id = 3;
+}
+
+message ChatResponse {
+  string reply = 1;
+  string intent = 2;
+  optional string mcp_command = 3;
+  map<string, string> parameters = 4;
+  bool matched = 5;
+}
+
+message KeywordRequest {
+  string message = 1;
+}
+
+message KeywordResponse {
+  string intent = 1;
+  repeated string matched_keywords = 2;
+  map<string, string> parameters = 3;
+  bool matched = 4;
+  optional string user_guide = 5;
+}
+
+message TestRuleRequest {
+  string message = 1;
+  string rule_json = 2;
+}
+
+message TestRuleResponse {
+  bool matched = 1;
+  map<string, string> extracted_params = 2;
+  string debug_info = 3;
+}

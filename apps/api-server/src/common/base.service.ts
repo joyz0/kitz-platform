@@ -102,6 +102,14 @@ export abstract class BaseService {
   }
 
   /**
+   * 记录信息日志
+   */
+  protected logInfo(message: string, details?: Record<string, any>): void {
+    const fullMessage = details ? `${message}: ${JSON.stringify(details)}` : message;
+    this.logger.log(fullMessage);
+  }
+
+  /**
    * 记录警告信息
    */
   protected logWarning(message: string, context?: string): void {

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { InviteCodesModule } from './invite-codes/invite-codes.module';
+import { AiModule } from './ai/ai.module';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { LocalRedisModule } from './redis/redis.module';
@@ -19,6 +20,7 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     UsersModule,
     InviteCodesModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [
