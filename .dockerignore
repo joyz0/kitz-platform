@@ -1,0 +1,13 @@
+# .dockerignore (位于项目根目录或 ai-server/ 下)
+# 忽略所有 node_modules
+apps/web/node_modules
+packages/*/node_modules
+
+# 忽略 Turbo 的缓存
+.turbo
+
+# 忽略 Python 无关的配置文件
+apps/web/**/*
+!apps/web/Dockerfile # 但包含 web 的 Dockerfile
+
+packages/**/*
